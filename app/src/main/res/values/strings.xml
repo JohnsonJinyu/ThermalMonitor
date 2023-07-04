@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">ThermalMonitor</string>
+
+    <string name="TabName_OverView">概览</string>
+    <string name="TabName_Battery">电池</string>
+    <string name="TabName_Thermal">温度</string>
+    <string name="TabName_Soc">芯片</string>
+
+    <string name="battery_level_title">Battery_Level</string>
+    <string name="battery_status_title">Battery_Status</string>
+    <string name="battery_current_title">Battery_Current</string>
+    <string name="battery_temperature_title">Battery_Temperature</string>
+    <string name="battery_voltage_title">Battery_Voltage</string>
+    <string name="battery_source_title">Power_Source</string>
+</resources>
