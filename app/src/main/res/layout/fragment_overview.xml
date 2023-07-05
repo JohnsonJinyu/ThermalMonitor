@@ -4,62 +4,49 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/textViewTime"
+    <!-- 三个CheckBox用于选择需要记录的数据 -->
+    <CheckBox
+        android:id="@+id/checkBox_battery"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="00:00:00"
-        android:textSize="24sp" />
+        android:text="电池" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <CheckBox
+        android:id="@+id/checkBox_thermal"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:text="温度" />
 
-        <CheckBox
-            android:id="@+id/checkBoxBattery"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="电池" />
-
-        <CheckBox
-            android:id="@+id/checkBoxThermal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="温度" />
-
-        <CheckBox
-            android:id="@+id/checkBoxSoc"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Soc" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
+    <CheckBox
+        android:id="@+id/checkBox_soc"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:text="Soc" />
 
-        <Button
-            android:id="@+id/buttonStart"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="开始" />
+    <!-- 三个按钮用于控制记录的开始、中止和停止并保存 -->
+    <Button
+        android:id="@+id/button_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="开始" />
 
-        <Button
-            android:id="@+id/buttonAbort"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="中止" />
+    <Button
+        android:id="@+id/button_stop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="中止" />
 
-        <Button
-            android:id="@+id/buttonStop"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="停止并保存" />
-    </LinearLayout>
+    <Button
+        android:id="@+id/button_save"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="停止并保存" />
+
+    <!-- 一个TextView用于显示记录的时长 -->
+    <TextView
+        android:id="@+id/textView_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="00:00" />
+
 </LinearLayout>

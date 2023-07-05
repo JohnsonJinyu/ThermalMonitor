@@ -48,7 +48,7 @@ class ThermalViewModel: ViewModel() {
                 }
                 //在主线程更新LiveData的值，通知观察者数据变化
                 withContext(Dispatchers.Main){
-                    _thermalList.value = list
+                    _thermalList.postValue(list)
                 }
                 Thread.sleep(1000) //每秒执行一次
             }
