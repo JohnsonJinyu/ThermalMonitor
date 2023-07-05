@@ -101,6 +101,7 @@ class OverViewFragment : Fragment() {
                 isRecording = false
                 stopRecord()
                 stopTimer()
+                resetTimer(binding.textViewTime) //将计时归零，方便下次重新开始计时
                 stopTime = getCurrentTime() //获取当前时间作为停止记录时间
                 saveDataToExcel()
             } else { //如果不在记录状态，则toast提醒用户未开始记录
@@ -163,18 +164,23 @@ class OverViewFragment : Fragment() {
         }
         //获取当前时间作为时间戳
         val timeStamp = getCurrentTime()
-        //将电池数据添加到二维数组的最后一行
-        dataMatrix.add(
-            mutableListOf(
-                timeStamp,
-                data.level.toString(),
-                data.status,
-                data.current.toString(),
-                data.temperature.toString(),
-                data.voltage.toString(),
-                data.source
-            )
-        )
+        //检查是否已经有该时间戳对应的行，如果没有则创建一个新行，如果有则获取该行
+        val lastRow = dataMatrix.findLast { it[0] == timeStamp } ?: mutableListOf(timeStamp).apply {
+            dataMatrix.add(this)
+        }
+        //将电池数据添加到该行的相应位置，根据标题的索引来确定位置
+        val titles = dataMatrix[0]
+        //检查该行是否已经有足够的单元格，如果没有则添加空字符串作为占位符
+        while (lastRow.size <= titles.indexOf("source")) {
+            lastRow.add("")
+        }
+        //将电池数据赋给相应的单元格
+        lastRow[titles.indexOf("level")] = data.level.toString()
+        lastRow[titles.indexOf("status")] = data.status
+        lastRow[titles.indexOf("current")] = data.current.toString()
+        lastRow[titles.indexOf("temperature")] = data.temperature.toString()
+        lastRow[titles.indexOf("voltage")] = data.voltage.toString()
+        lastRow[titles.indexOf("source")] = data.source
     }
 
     //添加温度数据到二维数组的方法，根据ThermalData的属性，将数据添加到相应的位置
@@ -185,15 +191,30 @@ class OverViewFragment : Fragment() {
                 firstRow.add(data.type)
             }
             dataMatrix.add(firstRow)
+        } else { //如果二维数组不为空，则检查是否已经有温度类型的标题，如果没有则添加
+            val firstRow = dataMatrix[0]
+            for (data in list) {
+                if (!firstRow.contains(data.type)) {
+                    firstRow.add(data.type)
+                }
+            }
         }
         //获取当前时间作为时间戳
         val timeStamp = getCurrentTime()
-        //将温度数据添加到二维数组的最后一行，只需要添加温度值，不需要添加类型
-        val lastRow = mutableListOf(timeStamp)
-        for (data in list) {
-            lastRow.add(data.temp)
+        //检查是否已经有该时间戳对应的行，如果没有则创建一个新行，如果有则获取该行
+        val lastRow = dataMatrix.findLast { it[0] == timeStamp } ?: mutableListOf(timeStamp).apply {
+            dataMatrix.add(this)
         }
-        dataMatrix.add(lastRow)
+        //将温度数据添加到该行的相应位置，根据标题的索引来确定位置
+        val titles = dataMatrix[0]
+        for (data in list) {
+            //检查该行是否已经有足够的单元格，如果没有则添加空字符串作为占位符
+            while (lastRow.size <= titles.indexOf(data.type)) {
+                lastRow.add("")
+            }
+            //将温度值赋给相应的单元格
+            lastRow[titles.indexOf(data.type)] = data.temp
+        }
     }
 
     //添加Soc数据到二维数组的方法，根据DynamicInfo的属性，将数据添加到相应的位置
@@ -204,15 +225,30 @@ class OverViewFragment : Fragment() {
                 firstRow.add("number${data.coreNumber}")
             }
             dataMatrix.add(firstRow)
+        } else { //如果二维数组不为空，则检查是否已经有核心编号的标题，如果没有则添加
+            val firstRow = dataMatrix[0]
+            for (data in list) {
+                if (!firstRow.contains("number${data.coreNumber}")) {
+                    firstRow.add("number${data.coreNumber}")
+                }
+            }
         }
         //获取当前时间作为时间戳
         val timeStamp = getCurrentTime()
-        //将Soc数据添加到二维数组的最后一行，只需要添加核心频率，不需要添加核心编号
-        val lastRow = mutableListOf(timeStamp)
-        for (data in list) {
-            lastRow.add(data.coreFrequency.toString())
+        //检查是否已经有该时间戳对应的行，如果没有则创建一个新行，如果有则获取该行
+        val lastRow = dataMatrix.findLast { it[0] == timeStamp } ?: mutableListOf(timeStamp).apply {
+            dataMatrix.add(this)
         }
-        dataMatrix.add(lastRow)
+        //将Soc数据添加到该行的相应位置，根据标题的索引来确定位置
+        val titles = dataMatrix[0]
+        for (data in list) {
+            //检查该行是否已经有足够的单元格，如果没有则添加空字符串作为占位符
+            while (lastRow.size <= titles.indexOf("number${data.coreNumber}")) {
+                lastRow.add("")
+            }
+            //将核心频率赋给相应的单元格
+            lastRow[titles.indexOf("number${data.coreNumber}")] = data.coreFrequency.toString()
+        }
     }
 
     //开始计时的方法，使用CountDownTimer实现计时器，并显示在TextView上
@@ -303,5 +339,6 @@ class OverViewFragment : Fragment() {
         dataMatrix.clear()
     }
 }
+
 
 
