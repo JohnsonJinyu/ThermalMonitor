@@ -12,8 +12,9 @@ import com.example.thermalmonitor.thermal.ThermalFragment
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 
-
 class MainActivity : AppCompatActivity(){
+
+
 
     //定义一个SectionsPagerAdapter对象，用来提供Fragment给ViewPager2
     private lateinit var sectionsPagerAdapter: SectionsPagerAdapter
@@ -57,6 +58,7 @@ class MainActivity : AppCompatActivity(){
             )
         }.attach()
 
+
     }
 
     class SectionsPagerAdapter(activity: AppCompatActivity) : FragmentStateAdapter(activity) {
@@ -77,8 +79,9 @@ class MainActivity : AppCompatActivity(){
             }
 
         }
-
     }
+
+
 
 }
 
