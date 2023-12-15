@@ -12,4 +12,6 @@
     <string name="battery_temperature_title">Battery_Temperature</string>
     <string name="battery_voltage_title">Battery_Voltage</string>
     <string name="battery_source_title">Power_Source</string>
+
+
 </resources>
