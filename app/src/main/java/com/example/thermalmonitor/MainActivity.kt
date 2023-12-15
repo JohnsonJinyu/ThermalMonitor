@@ -1,7 +1,12 @@
 package com.example.thermalmonitor
 
+import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
@@ -11,8 +16,10 @@ import com.example.thermalmonitor.soc.SocFragment
 import com.example.thermalmonitor.thermal.ThermalFragment
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import java.security.Permission
 
 class MainActivity : AppCompatActivity(){
+
 
 
 
@@ -59,6 +66,8 @@ class MainActivity : AppCompatActivity(){
         }.attach()
 
 
+
+
     }
 
     class SectionsPagerAdapter(activity: AppCompatActivity) : FragmentStateAdapter(activity) {
@@ -80,6 +89,8 @@ class MainActivity : AppCompatActivity(){
 
         }
     }
+
+
 
 
 

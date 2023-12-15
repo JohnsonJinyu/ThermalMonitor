@@ -1,151 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/battery_card"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:layout_margin="16dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp">
 
-    <!-- a card view to display the battery information -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/battery_card"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="4dp"
-        app:layout_constraintTop_toTopOf="parent">
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <!-- a linear layout to hold the text views for the battery information -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/level_text"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:textSize="24sp"
+            android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/battery_level_title"
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:text="@string/battery_level_title"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                />
-            <TextView
-                android:id="@+id/battery_level"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toEndOf="@id/battery_level_title"
-                app:layout_constraintTop_toTopOf="parent"/>
+        <TextView
+            android:id="@+id/status_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
-            <!-- a text view to show the charging status -->
-            <TextView
-                android:id="@+id/battery_status_title"
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:layout_marginTop="16dp"
-                android:text="@string/battery_status_title"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/battery_level_title"
-                />
+        <TextView
+            android:id="@+id/current_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
-            <TextView
-                android:id="@+id/battery_status"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:layout_marginTop="16dp"
-                app:layout_constraintStart_toEndOf="@id/battery_status_title"
-                app:layout_constraintTop_toBottomOf="@id/battery_level" />
+        <TextView
+            android:id="@+id/temperature_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
-            <!-- a text view to show the battery current in mA -->
-            <TextView
-                android:id="@+id/battery_current_title"
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:layout_marginTop="16dp"
-                android:text="@string/battery_current_title"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/battery_status_title"/>
+        <TextView
+            android:id="@+id/voltage_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
-
-            <TextView
-                android:id="@+id/battery_current"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:layout_marginTop="16dp"
-                app:layout_constraintStart_toEndOf="@id/battery_current_title"
-                app:layout_constraintTop_toBottomOf="@id/battery_status"/>
-
-            <!-- a text view to show the battery temperature in °C -->
-            <TextView
-                android:id="@+id/battery_temperature_title"
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:layout_marginTop="16dp"
-                android:text="@string/battery_temperature_title"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/battery_current_title"/>
-
-
-            <TextView
-                android:id="@+id/battery_temperature"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:layout_marginTop="16dp"
-                app:layout_constraintStart_toEndOf="@id/battery_temperature_title"
-                app:layout_constraintTop_toBottomOf="@id/battery_current"/>
-
-            <!-- a text view to show the battery voltage in V -->
-            <TextView
-                android:id="@+id/battery_voltage_title"
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:layout_marginTop="16dp"
-                android:text="@string/battery_voltage_title"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/battery_temperature_title"
-                />
-
-
-            <TextView
-                android:id="@+id/battery_voltage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:layout_marginTop="16dp"
-                app:layout_constraintStart_toEndOf="@id/battery_voltage_title"
-                app:layout_constraintTop_toBottomOf="@id/battery_temperature"/>
-
-            <!-- a text view to show the power source -->
-            <TextView
-                android:id="@+id/battery_source_title"
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:layout_marginTop="16dp"
-                android:text="@string/battery_source_title"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/battery_voltage_title" />
-
-
-            <TextView
-                android:id="@+id/battery_source"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:layout_marginTop="16dp"
-                app:layout_constraintStart_toEndOf="@id/battery_source_title"
-                app:layout_constraintTop_toBottomOf="@id/battery_voltage"/>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </com.google.android.material.card.MaterialCardView>
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:id="@+id/source_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

@@ -1,101 +1,107 @@
 package com.example.thermalmonitor.battery
 
-
+import android.app.Application
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.BatteryManager
-import android.os.Handler
-import android.os.Looper
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import java.util.Timer
+import java.util.TimerTask
 
-class BatteryViewModel : ViewModel() {
 
-    // live data to hold the battery data and expose it to the UI layer
+class BatteryViewModel(application: Application) : AndroidViewModel(application) {
+
+    // 一个MutableLiveData对象，用于存储和更新电池信息
     private val _batteryData = MutableLiveData<BatteryData>()
-    val batteryData: LiveData<BatteryData> get() = _batteryData
+    // 一个LiveData对象，用于暴露给UI层观察和订阅
+    val batteryData: LiveData<BatteryData>
+        get() = _batteryData
 
-    // a handler object to run the periodic update of current data on the main thread
-    private val handler = Handler(Looper.getMainLooper())
-
-    // a flag to indicate whether the periodic update is running or not
-    private var isUpdating = false
-
-    // a constant to define the interval time for the periodic update in milliseconds
-    private val intervalTime = 1000L
-
-    // broadcast receiver to receive the battery changes from the system and update the live data accordingly
-    val batteryReceiver = object : BroadcastReceiver() {
+    // 一个BroadcastReceiver对象，用于接收系统广播的电池信息变化
+    private val batteryReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            intent?.let {
-                // get the battery information from the intent extras and create a BatteryData object from them
-                val level = it.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) // battery level percentage (-1 if unknown)
-                val status = it.getIntExtra(BatteryManager.EXTRA_STATUS, -1) // charging status (constant defined in BatteryManager class)
-                val voltage = it.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1) / 1000f // battery voltage in millivolts (-1 if unknown)
-                val source = it.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) // power source (constant defined in BatteryManager class)
-
-                // convert the status and source constants to human-readable strings using when expressions
-                val statusString = when (status) {
-                    BatteryManager.BATTERY_STATUS_CHARGING -> "充电中"
-                    BatteryManager.BATTERY_STATUS_DISCHARGING -> "放电中"
-                    BatteryManager.BATTERY_STATUS_FULL -> "已充满"
-                    BatteryManager.BATTERY_STATUS_NOT_CHARGING -> "未充电"
-                    BatteryManager.BATTERY_STATUS_UNKNOWN -> "未知"
-                    else -> "未知"
-                }
-
-                val sourceString = when (source) {
-                    BatteryManager.BATTERY_PLUGGED_AC -> "交流电源"
-                    BatteryManager.BATTERY_PLUGGED_USB -> "USB电源"
-                    BatteryManager.BATTERY_PLUGGED_WIRELESS -> "无线电源"
-                    0 -> "未插入电源"
-                    else -> "未知"
-                }
-
-                // get the battery temperature from the intent extras in tenths of a degree Centigrade and convert it to degrees Celsius
-                val temperature = it.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1) / 10f // battery temperature in °C
-
-                // update the live data with the new BatteryData object, keeping the current value unchanged
-                _batteryData.value = _batteryData.value?.copy(level = level, status = statusString, temperature = temperature, voltage = voltage, source = sourceString)
-                    ?: BatteryData(level, statusString, 0, temperature, voltage, sourceString)
-
-                // start the periodic update of current data if not already started
-                if (!isUpdating) {
-                    startPeriodicUpdate(context)
-                }
-            }
+            // 调用一个方法，用于获取电池信息并更新LiveData对象的值
+            updateBatteryData(intent)
         }
     }
 
-    // a function to start the periodic update of current data using handler
-    private fun startPeriodicUpdate(context: Context?) {
-        isUpdating = true // set the flag to true
-        handler.postDelayed(object : Runnable { // post a runnable object with a delay of interval time
+    // 一个Timer对象，用于定时获取电池信息
+    private val timer = Timer()
+
+    // 在ViewModel初始化时，注册BroadcastReceiver对象，监听电池信息变化的系统广播，并启动Timer对象，每隔一秒就主动获取一次电池信息
+    init {
+        val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+        getApplication<Application>().registerReceiver(batteryReceiver, filter)
+        timer.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
-                // get the battery manager service from the context and use it to get the battery current in mA
-                val batteryManager = context?.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
-                val current = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW) / 1000// battery current in mA
-
-                // update the live data with the new current value, keeping the other values unchanged
-                _batteryData.value = _batteryData.value?.copy(current = current)
-                    ?: BatteryData(0, "未知", current, 0f, 0f, "未知")
-
-                handler.postDelayed(this, intervalTime) // post this runnable object again with a delay of interval time
+                // 获取当前的Intent对象，包含电池信息的额外数据
+                val intent = getApplication<Application>().registerReceiver(null, filter)
+                // 调用一个方法，用于获取电池信息并更新LiveData对象的值
+                updateBatteryData(intent)
             }
-        }, intervalTime)
+        }, 0, 1000) // 每隔1000毫秒（即1秒）执行一次任务
     }
 
-    // a function to stop the periodic update of current data
-    private fun stopPeriodicUpdate() {
-        isUpdating = false // set the flag to false
-        handler.removeCallbacksAndMessages(null) // remove all callbacks and messages from the handler
-    }
-
-    // override the onCleared() function of the view model to stop the periodic update when the view model is destroyed
+    // 在ViewModel销毁时，注销BroadcastReceiver对象，取消Timer对象，避免内存泄漏
     override fun onCleared() {
         super.onCleared()
-        stopPeriodicUpdate()
+        getApplication<Application>().unregisterReceiver(batteryReceiver)
+        timer.cancel()
+    }
+
+    // 一个方法，用于获取电池信息，并更新LiveData对象的值
+    private fun updateBatteryData(intent: Intent?) {
+        // 获取BatteryManager对象，用于获取电池信息的属性值
+        val batteryManager =
+            getApplication<Application>().getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+
+        // 获取电量百分比，范围是0-100
+        var level = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+        if (level == -1) { // 如果获取失败，就从Intent中获取
+            level = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+        }
+
+        // 获取充电状态，转换为字符串表示
+        val status = when (intent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1)) {
+            BatteryManager.BATTERY_STATUS_CHARGING -> "充电中"
+            BatteryManager.BATTERY_STATUS_DISCHARGING -> "放电中"
+            BatteryManager.BATTERY_STATUS_FULL -> "已充满"
+            BatteryManager.BATTERY_STATUS_NOT_CHARGING -> "未充电"
+            BatteryManager.BATTERY_STATUS_UNKNOWN -> "未知"
+            else -> "未知"
+        }
+
+        // 获取实时电流，单位是微安培（uA）
+        var current = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
+//        if (current == 0) { // 如果获取失败，就尝试另一种方式获取
+//            current = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
+//        }
+
+        // 获取电池温度，单位是摄氏度（℃）
+        val temperature =
+            intent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1)?.div(10) ?: -1
+
+        // 获取电压，单位是毫伏（mV）
+        val voltage = intent?.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1) ?: -1
+
+        // 获取供电来源，转换为字符串表示
+        val source = when (intent?.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1)) {
+            BatteryManager.BATTERY_PLUGGED_AC -> "交流电源"
+            BatteryManager.BATTERY_PLUGGED_USB -> "USB端口"
+            BatteryManager.BATTERY_PLUGGED_WIRELESS -> "无线充电"
+            0 -> "电池供电"
+            else -> "未知"
+        }
+
+        // 创建一个BatteryData对象，用于封装电池信息的属性值
+        val batteryData = BatteryData(level, status, current, temperature, voltage, source)
+
+        // 更新MutableLiveData对象的值，通知UI层数据变化
+        _batteryData.postValue(batteryData)
     }
 }
+
