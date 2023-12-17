@@ -34,20 +34,23 @@
 
             <CheckBox
                 android:id="@+id/cb_battery"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="电池" />
 
             <CheckBox
                 android:id="@+id/cb_thermal"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="温度" />
 
             <CheckBox
                 android:id="@+id/cb_soc"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="Soc" />
         </LinearLayout>
 

@@ -2,7 +2,9 @@ package com.example.thermalmonitor
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -64,6 +66,7 @@ class MainActivity : AppCompatActivity(){
                 }
             )
         }.attach()
+
 
 
 

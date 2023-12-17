@@ -251,9 +251,9 @@ class OverViewFragment : Fragment() {
                     val row = sheetThermal.createRow(i)
                     val cell = row.createCell(0)
                     cell.setCellValue(data[i - 1][0]) // write the timestamp to the first cell
-                    for (j in 1..titleArrayThermal.size) {
+                    for (j in 1 until titleArrayThermal.size) {
                         val cell = row.createCell(j)
-                        cell.setCellValue(data[i - 1][j + 6]) // write the temperatures to the rest cells, skipping the first 6 columns of battery data
+                        cell.setCellValue(data[i - 1][j]) // write the temperatures to the rest cells, skipping the first 6 columns of battery data
                     }
                 }
             }
