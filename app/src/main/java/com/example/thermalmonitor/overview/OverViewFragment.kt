@@ -8,7 +8,6 @@ import android.icu.text.SimpleDateFormat
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
-import android.os.Environment.getExternalStoragePublicDirectory
 import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
@@ -29,18 +28,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.File
-import java.io.FileOutputStream
 import java.util.Date
 import java.util.Locale
 
 //OverViewFragment.kt
 class OverViewFragment : Fragment() {
 
-
-
-
-
-
+    /**
+     * 这个类的目的是将读取的数据保存到设备
+     * */
 
     // view models for battery, thermal and soc data
     private val batteryViewModel: BatteryViewModel by viewModels()
@@ -61,6 +57,8 @@ class OverViewFragment : Fragment() {
 
     // a job to run the coroutine for recording and updating UI
     private lateinit var job: Job
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -92,18 +90,25 @@ class OverViewFragment : Fragment() {
             checked[2] = isChecked
         }
 
-        // set the onClickListener for the start button
+        /**
+         * 设置开始按钮的点击事件
+         * */
         binding.btnStart.setOnClickListener {
             if (!isRecording) { // if not in recording state, start recording and update UI
                 isRecording = true
                 job = lifecycleScope.launch(Dispatchers.Main) {
+                    // Reset timer and timeString to initial values
+                    timer = 0
+                    val timeString = "00:00:00"
+                    binding.tvTimer.text = timeString
+
                     while (isRecording) {
                         val row = getDataFromLiveData() // get a row of data from live data
                         data += row // add the row to the data array
                         timer++ // increase the timer by one second
-                        val timeString =
+                        val updatedTimeString =
                             String.format("%02d:%02d:%02d", timer / 3600, timer / 60, timer % 60) // format the timer to hh:mm:ss
-                        binding.tvTimer.text = timeString // show the timer on the text view
+                        binding.tvTimer.text = updatedTimeString // show the updated timer on the text view
                         Log.d("DATA", data.contentDeepToString()) // print the data array for debugging
                         delay(1000) // wait for one second
                     }
@@ -114,7 +119,10 @@ class OverViewFragment : Fragment() {
         }
 
 
-        // set the onClickListener for the abort button
+
+        /**
+         * 设置中止按钮的点击事件
+         * */
         binding.btnAbort.setOnClickListener {
             if (isRecording) { // if in recording state, show a dialog to confirm with the user
                 AlertDialog.Builder(requireContext())
@@ -136,7 +144,9 @@ class OverViewFragment : Fragment() {
 
 
 
-        // set the onClickListener for the stop and save button
+        /**
+         * 设置停止按钮的点击事件
+         * */
         binding.btnStopAndSave.setOnClickListener {
             if (isRecording) { // if in recording state, stop recording and save data to excel file
                 isRecording = false // stop recording state
@@ -186,9 +196,7 @@ class OverViewFragment : Fragment() {
 
     }
 
-    /**
-     * 保存文件仍然存在问题
-     * */
+
 
     /**
      * A function to save data to excel file and return a boolean result.
@@ -198,6 +206,10 @@ class OverViewFragment : Fragment() {
 
         return try {
             val workbook = XSSFWorkbook() // create a workbook object
+
+            /**
+             * 这一段是对电池数据的处理
+             * */
 
             if (checked[0]) { // if battery is checked, create a sheet for battery data and write data to it
 
@@ -221,6 +233,10 @@ class OverViewFragment : Fragment() {
 
             }
 
+            /**
+             * 这一段是对温度数据的处理
+             * */
+
             if (checked[1]) { // if thermal is checked, create a sheet for thermal data and write data to it
 
                 val sheetThermal = workbook.createSheet("TMData-Thermal") // create a sheet for thermal data
@@ -242,7 +258,9 @@ class OverViewFragment : Fragment() {
                 }
             }
 
-
+            /**
+             * 这一段是对soc数据的处理
+             * */
             if (checked[2]) { // if soc is checked, create a sheet for soc data and write data to it
 
                 val sheetSoc = workbook.createSheet("TMData-Soc") // create a sheet for soc data
@@ -306,7 +324,9 @@ class OverViewFragment : Fragment() {
             workbook.close()
 
 
-            saveDataToExcel(fileName) // return true if no exception occurs, and pass the fileName as a parameter
+            // 文件保存成功后返回 true
+            true
+            //saveDataToExcel(fileName) // return true if no exception occurs, and pass the fileName as a parameter
         } catch (e: Exception) {
             e.printStackTrace()
             Log.e("SAVE_DATA", "保存数据失败，原因：${e.message}") // print the exception message to the logcat
