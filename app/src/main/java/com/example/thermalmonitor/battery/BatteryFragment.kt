@@ -45,7 +45,12 @@ class BatteryFragment : Fragment() {
                 // 通过ViewBinding对象访问布局文件中的视图元素，并设置相应的数据
                 levelText.text = "${batteryData.level}%"
                 statusText.text = batteryData.status
-                currentText.text = "${batteryData.current / 1000}mA" // 将微安培转换为毫安培
+
+                /**
+                 * 这里还需要验证一下，是否不同的设备都需要或者不需要除以1000，目前荣耀设备，安卓14不需要除以1000就可以获得电流值
+                 * 其他厂商的设备还需要验证，用设备管理器App同步对比，两者电流值一致，说明方向没问题
+                 * */
+                currentText.text = "${batteryData.current }mA" // 将微安培转换为毫安培
                 temperatureText.text = "${batteryData.temperature}℃"
                 voltageText.text = "${batteryData.voltage}mV"
                 sourceText.text = batteryData.source

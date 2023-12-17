@@ -77,9 +77,7 @@ class BatteryViewModel(application: Application) : AndroidViewModel(application)
 
         // 获取实时电流，单位是微安培（uA）
         var current = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
-//        if (current == 0) { // 如果获取失败，就尝试另一种方式获取
-//            current = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
-//        }
+
 
         // 获取电池温度，单位是摄氏度（℃）
         val temperature =

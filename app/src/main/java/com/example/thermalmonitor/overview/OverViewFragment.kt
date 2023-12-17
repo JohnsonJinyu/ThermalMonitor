@@ -283,7 +283,7 @@ class OverViewFragment : Fragment() {
             }
 
 
-            // 获取文件的 MIME 类型，这里假设是 Excel 文件
+            // 指定文件的MIME类型
             val mimeType = "application/vnd.ms-excel"
 
             // 获取文件的显示名称，这里假设是 fileName
@@ -313,19 +313,16 @@ class OverViewFragment : Fragment() {
 
             // 更新 ContentValues 对象，将文件状态设置为可用
             values.clear()
-            values.put(MediaStore.Downloads.IS_PENDING, 0)
 
+            values.put(MediaStore.Downloads.IS_PENDING, 0)
             // 通过 contentResolver 更新 MediaStore 中的记录
             if (uri != null) {
                 requireContext().contentResolver.update(uri, values, null, null)
             }
-
             // 关闭 workbook
             workbook.close()
 
-
-            // 文件保存成功后返回 true
-            true
+            true  // 文件保存成功后返回 true
             //saveDataToExcel(fileName) // return true if no exception occurs, and pass the fileName as a parameter
         } catch (e: Exception) {
             e.printStackTrace()
