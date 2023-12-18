@@ -1,6 +1,5 @@
 package com.example.thermalmonitor.overview
 
-import android.Manifest
 import android.app.AlertDialog
 import android.content.ContentValues
 import android.content.Intent
@@ -14,7 +13,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -167,14 +165,17 @@ class OverViewFragment : Fragment() {
                     // 弹窗提示保存路径
                     AlertDialog.Builder(requireContext())
                         .setTitle("保存成功")
-                        .setMessage("文件已保存到:/storage/emulated/0/ThermalMonitor/files/$fileName")
+                        .setMessage("文件已保存到:/storage/emulated/0/Download/ThermalMonitor/$fileName")
                         .setPositiveButton("打开文件夹") { _, _ ->
+
 
                             // 打开文件夹
                             val folder = File(requireContext().getExternalFilesDir(null), "ThermalMonitor")
-                            val intent = Intent(Intent.ACTION_VIEW)
-                            intent.setDataAndType(Uri.fromFile(folder), "*/*")
+                            val intent = Intent(Intent.ACTION_GET_CONTENT)
+                            intent.setDataAndType(Uri.parse(folder.absolutePath), "*/*")
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
                             startActivity(intent)
+
 
                         }
                         .setNegativeButton("取消") { dialog, _ ->
@@ -323,7 +324,7 @@ class OverViewFragment : Fragment() {
             workbook.close()
 
             true  // 文件保存成功后返回 true
-            //saveDataToExcel(fileName) // return true if no exception occurs, and pass the fileName as a parameter
+
         } catch (e: Exception) {
             e.printStackTrace()
             Log.e("SAVE_DATA", "保存数据失败，原因：${e.message}") // print the exception message to the logcat
