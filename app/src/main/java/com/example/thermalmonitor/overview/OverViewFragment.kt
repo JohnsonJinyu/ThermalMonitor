@@ -5,6 +5,7 @@ import android.content.ContentValues
 import android.content.Intent
 import android.icu.text.SimpleDateFormat
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
@@ -13,6 +14,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -25,7 +27,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
-import java.io.File
 import java.util.Date
 import java.util.Locale
 
@@ -58,6 +59,7 @@ class OverViewFragment : Fragment() {
 
 
 
+    @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -153,9 +155,16 @@ class OverViewFragment : Fragment() {
                 // get the current time as a string in yyyyMMddHHmm format
                 val currentTime = SimpleDateFormat("yyyyMMddHHmm", Locale.getDefault()).format(Date())
 
+                /**
+                 * 需要将时间戳的字符串转换为 Date 对象，然后再进行格式化。
+                 * 可以使用 SimpleDateFormat 将时间戳的字符串解析为 Date 对象，然后再格式化为你想要的格式。
+                 * */
+                val startTime = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.getDefault()).format(
+                    SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault()).parse(data[0][0])
+                )
+                val endTime = SimpleDateFormat("HHmmss", Locale.getDefault()).format(Date())
+                val fileName = "TMData-$startTime-$endTime.xlsx"
 
-                // generate a file name based on the start and end time
-                val fileName = "TMData-${data[0][0]}-$currentTime.xlsx"
 
 
                 val result = saveDataToExcel(fileName) // save data to excel file and get a boolean result, and pass the fileName as a parameter
@@ -169,12 +178,18 @@ class OverViewFragment : Fragment() {
                         .setPositiveButton("打开文件夹") { _, _ ->
 
 
-                            // 打开文件夹
-                            val folder = File(requireContext().getExternalFilesDir(null), "ThermalMonitor")
+                            /**
+                             * 打开保存文件的目录
+                             * 目前还是有些问题
+                             * 后续再继续优化
+                             * */
+
                             val intent = Intent(Intent.ACTION_GET_CONTENT)
-                            intent.setDataAndType(Uri.parse(folder.absolutePath), "*/*")
-                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
-                            startActivity(intent)
+                            val uri = Uri.parse(Environment.getExternalStorageDirectory().path + "/Download/ThermalMonitor/")
+                            intent.setDataAndType(uri, "*/*")
+                            startActivity(Intent.createChooser(intent, "Open folder"))
+
+
 
 
                         }
@@ -285,7 +300,9 @@ class OverViewFragment : Fragment() {
 
 
             // 指定文件的MIME类型
-            val mimeType = "application/vnd.ms-excel"
+
+            val mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
 
             // 获取文件的显示名称，这里假设是 fileName
             val displayName = fileName
@@ -344,7 +361,8 @@ class OverViewFragment : Fragment() {
         val result = mutableListOf<String>() // create a mutable list to store the result
 
         // get the current time as a string in HHmmss format
-        val timeString = SimpleDateFormat("HHmmss", Locale.getDefault()).format(Date())
+        val timeString = SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault()).format(Date())
+
 
         // add the time string to the result list
         result.add(timeString)
