@@ -27,6 +27,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import timber.log.Timber
 import java.util.Date
 import java.util.Locale
 
@@ -42,6 +43,9 @@ class OverViewFragment : Fragment() {
     private val thermalViewModel: ThermalViewModel by viewModels()
     private val socViewModel: SocViewModel by viewModels()
 
+    // 创建 DataProcessToSave类的实例
+    private val dataProcessor = DataProcessToSave()
+
     // a variable to indicate whether it is in recording state, default is false
     private var isRecording = false
 
@@ -51,12 +55,16 @@ class OverViewFragment : Fragment() {
     // a two-dimensional array to store the data, default is empty
     private var data = arrayOf<Array<String>>()
 
+    // 分别给battery，thermal，soc定义二维数组去存储数据
+    private var BatteryDataStoreArray = arrayOf<Array<String>>()
+    private var ThermalDataStoreArray = arrayOf<Array<String>>()
+    private var SocDataStoreArray = arrayOf<Array<String>>()
+
     // a boolean array to store the user's choices, default is false
     private var checked = booleanArrayOf(false, false, false)
 
     // a job to run the coroutine for recording and updating UI
     private lateinit var job: Job
-
 
 
     @RequiresApi(Build.VERSION_CODES.R)
@@ -66,18 +74,16 @@ class OverViewFragment : Fragment() {
     ): View? {
 
 
-
-
         // Inflate the layout for this fragment
         val binding = FragmentOverviewBinding.inflate(inflater)
         binding.lifecycleOwner = this
-
 
 
         // set the view models for the binding
         binding.batteryViewModel = batteryViewModel
         binding.thermalViewModel = thermalViewModel
         binding.socViewModel = socViewModel
+
 
         // set the onCheckedChangeListeners for the checkboxes
         binding.cbBattery.setOnCheckedChangeListener { _, isChecked ->
@@ -89,6 +95,7 @@ class OverViewFragment : Fragment() {
         binding.cbSoc.setOnCheckedChangeListener { _, isChecked ->
             checked[2] = isChecked
         }
+
 
         /**
          * 设置开始按钮的点击事件
@@ -103,21 +110,46 @@ class OverViewFragment : Fragment() {
                     binding.tvTimer.text = timeString
 
                     while (isRecording) {
-                        val row = getDataFromLiveData() // get a row of data from live data
-                        data += row // add the row to the data array
+
+                        val allDataList = getDataFromLiveData()
+                        //同时需要将返回的list类型的数据转为array 方便后续的处理
+                        val batteryRow = allDataList[0].toTypedArray()
+                        val thermalRow = allDataList[1].toTypedArray()
+                        val socRow = allDataList[2].toTypedArray()
+
+                        //val row = getDataFromLiveData() // get a row of data from live data
+                        //data += row // add the row to the data array
+                        BatteryDataStoreArray += batteryRow
+                        ThermalDataStoreArray += thermalRow
+                        SocDataStoreArray += socRow
+
                         timer++ // increase the timer by one second
                         val updatedTimeString =
-                            String.format("%02d:%02d:%02d", timer / 3600, timer / 60, timer % 60) // format the timer to hh:mm:ss
-                        binding.tvTimer.text = updatedTimeString // show the updated timer on the text view
-                        Log.d("DATA", data.contentDeepToString()) // print the data array for debugging
+                            String.format(
+                                "%02d:%02d:%02d",
+                                timer / 3600,
+                                timer / 60,
+                                timer % 60
+                            ) // format the timer to hh:mm:ss
+                        binding.tvTimer.text =
+                            updatedTimeString // show the updated timer on the text view
+                        Timber.tag("DATA").d(
+                            """ 
+                            batteryRow: ${batteryRow.contentDeepToString()}
+                            thermalRow: ${thermalRow.contentDeepToString()} 
+                            socRow: ${socRow.contentDeepToString()}
+                            """.trimIndent()  //用 trimIndent() 去掉前置空格
+                        )
+
+                        // print the data array for debugging
                         delay(1000) // wait for one second
                     }
                 }
             } else { // if in recording state, toast a message to remind the user
-                Toast.makeText(requireContext(), "正在记录中，请勿重复点击", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "正在记录中，请勿重复点击", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
-
 
 
         /**
@@ -133,15 +165,20 @@ class OverViewFragment : Fragment() {
                         job.cancel() // cancel the coroutine
                         timer = 0 // reset the timer to zero
                         binding.tvTimer.text = "00:00:00" // reset the text view to zero
-                        data = arrayOf() // clear the data array
+
+                        //data = arrayOf() // clear the data array
+                        //中止清除各个数组的数据
+                        BatteryDataStoreArray = arrayOf()
+                        ThermalDataStoreArray = arrayOf()
+                        SocDataStoreArray = arrayOf()
                     }
                     .setNegativeButton("取消", null)
                     .show()
             } else { // if not in recording state, toast a message to remind the user
-                Toast.makeText(requireContext(), "未开始记录，请先点击开始按钮", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "未开始记录，请先点击开始按钮", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
-
 
 
         /**
@@ -153,7 +190,8 @@ class OverViewFragment : Fragment() {
                 job.cancel() // cancel the coroutine
 
                 // get the current time as a string in yyyyMMddHHmm format
-                val currentTime = SimpleDateFormat("yyyyMMddHHmm", Locale.getDefault()).format(Date())
+                val currentTime =
+                    SimpleDateFormat("yyyyMMddHHmm", Locale.getDefault()).format(Date())
 
                 /**
                  * 需要将时间戳的字符串转换为 Date 对象，然后再进行格式化。
@@ -166,8 +204,8 @@ class OverViewFragment : Fragment() {
                 val fileName = "TMData-$startTime-$endTime.xlsx"
 
 
-
-                val result = saveDataToExcel(fileName) // save data to excel file and get a boolean result, and pass the fileName as a parameter
+                val result =
+                    saveDataToExcel(fileName) // save data to excel file and get a boolean result, and pass the fileName as a parameter
 
                 if (result) {
 
@@ -177,7 +215,6 @@ class OverViewFragment : Fragment() {
                         .setMessage("文件已保存到:/storage/emulated/0/Download/ThermalMonitor/$fileName")
                         .setPositiveButton("打开文件夹") { _, _ ->
 
-
                             /**
                              * 打开保存文件的目录
                              * 目前还是有些问题
@@ -185,33 +222,32 @@ class OverViewFragment : Fragment() {
                              * */
 
                             val intent = Intent(Intent.ACTION_GET_CONTENT)
-                            val uri = Uri.parse(Environment.getExternalStorageDirectory().path + "/Download/ThermalMonitor/")
+                            val uri =
+                                Uri.parse(Environment.getExternalStorageDirectory().path + "/Download/ThermalMonitor/")
                             intent.setDataAndType(uri, "*/*")
                             startActivity(Intent.createChooser(intent, "Open folder"))
-
-
-
 
                         }
                         .setNegativeButton("取消") { dialog, _ ->
                             dialog.dismiss()
                         }
                         .show()
-
-                } else {
-
-                    Toast.makeText(requireContext(), "保存失败,请重试", Toast.LENGTH_SHORT).show()
-
                 }
-            } else { // if not in recording state, toast a message to remind the user
-                Toast.makeText(requireContext(), "未开始记录，请先点击开始按钮", Toast.LENGTH_SHORT).show()
+                else
+                {
+                    Toast.makeText(requireContext(), "保存失败,请重试", Toast.LENGTH_SHORT).show()
+                }
+            }
+            else
+            {
+                // if not in recording state, toast a message to remind the user
+                Toast.makeText(requireContext(), "未开始记录，请先点击开始按钮", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
-
         return binding.root
 
     }
-
 
 
     /**
@@ -219,83 +255,26 @@ class OverViewFragment : Fragment() {
      * @param fileName the file name to save the data
      */
     private fun saveDataToExcel(fileName: String): Boolean {
-
         return try {
             val workbook = XSSFWorkbook() // create a workbook object
 
-            /**
-             * 这一段是对电池数据的处理
-             * */
-
-            if (checked[0]) { // if battery is checked, create a sheet for battery data and write data to it
-
-                val sheetBattery = workbook.createSheet("TMData-Battery") // create a sheet for battery data
-
-                val titleRowBattery = sheetBattery.createRow(0) // create a title row for battery data
-                val titleArrayBattery = arrayOf("时间戳", "level", "status", "current", "temperature", "voltage", "source") // create a title array for battery data
-                for (i in titleArrayBattery.indices) { // loop through the title array and write each title to the title row
-                    val cell = titleRowBattery.createCell(i)
-                    cell.setCellValue(titleArrayBattery[i])
-                }
-
-                for (i in 1 .. data.size) { // loop through the data array and write each row of battery data to the sheet
-                    val row = sheetBattery.createRow(i+1)
-                    for (j in 0..6) {
-                        val cell = row.createCell(j)
-                        cell.setCellValue(data[i - 1][j])
-                    }
-                }
-
-
+            // 如果电池的checkBox是Checked的状态，则对数据进行处理
+            if (checked[0])
+            {
+                dataProcessor.processBatteryData(workbook, BatteryDataStoreArray)
             }
 
-            /**
-             * 这一段是对温度数据的处理
-             * */
-
-            if (checked[1]) { // if thermal is checked, create a sheet for thermal data and write data to it
-
-                val sheetThermal = workbook.createSheet("TMData-Thermal") // create a sheet for thermal data
-
-                val titleRowThermal = sheetThermal.createRow(0) // create a title row for thermal data
-                val titleArrayThermal = arrayOf("时间戳") + thermalViewModel.thermalList.value!!.map { it.type } // create a title array for thermal data by adding the timestamp and the types of thermal zones
-                for (i in titleArrayThermal.indices) { // loop through the title array and write each title to the title row
-                    val cell = titleRowThermal.createCell(i)
-                    cell.setCellValue(titleArrayThermal[i])
-                }
-                for (i in 1..data.size) { // loop through the data array and write each row of thermal data to the sheet
-                    val row = sheetThermal.createRow(i)
-                    val cell = row.createCell(0)
-                    cell.setCellValue(data[i - 1][0]) // write the timestamp to the first cell
-                    for (j in 1 until titleArrayThermal.size) {
-                        val cell = row.createCell(j)
-                        cell.setCellValue(data[i - 1][j]) // write the temperatures to the rest cells, skipping the first 6 columns of battery data
-                    }
-                }
+            // 如果温度的checkBox是checked的状态，则对数据进行处理
+            if (checked[1])
+            {
+                dataProcessor.processThermalData(workbook,ThermalDataStoreArray)
             }
 
-            /**
-             * 这一段是对soc数据的处理
-             * */
+
+            // 如果芯片的checkBox是checked的状态，则对数据进行处理
             if (checked[2]) { // if soc is checked, create a sheet for soc data and write data to it
 
-                val sheetSoc = workbook.createSheet("TMData-Soc") // create a sheet for soc data
-
-                val titleRowSoc = sheetSoc.createRow(0) // create a title row for soc data
-                val titleArraySoc = arrayOf("时间戳") + socViewModel.dynamicInfo.value!!.map { "number${it.coreNumber}" } // create a title array for soc data by adding the timestamp and the numbers of cores
-                for (i in titleArraySoc.indices) { // loop through the title array and write each title to the title row
-                    val cell = titleRowSoc.createCell(i)
-                    cell.setCellValue(titleArraySoc[i])
-                }
-                for (i in 1..data.size) { // loop through the data array and write each row of soc data to the sheet
-                    val row = sheetSoc.createRow(i)
-                    val cell = row.createCell(0)
-                    cell.setCellValue(data[i - 1][0]) // write the timestamp to the first cell
-                    for (j in 1..titleArraySoc.size) {
-                        val cell = row.createCell(j)
-                        cell.setCellValue(data[i - 1][j + 6 + checked[1].toInt() * thermalViewModel.thermalList.value!!.size]) // write the frequencies to the rest cells, skipping the first 6 columns of battery data and the columns of thermal data if checked
-                    }
-                }
+                dataProcessor.processSocData(workbook,SocDataStoreArray)
             }
 
 
@@ -320,7 +299,10 @@ class OverViewFragment : Fragment() {
 
             // 通过调用 requireContext() 方法获取到对应的 Context，然后使用它的 contentResolver 属性
             // 通过 contentResolver 向 MediaStore 插入一条新记录，返回一个 Uri 对象
-            val uri = requireContext().contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+            val uri = requireContext().contentResolver.insert(
+                MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                values
+            )
 
             // 通过 contentResolver 打开一个输出流，写入文件内容
             if (uri != null) {
@@ -344,10 +326,12 @@ class OverViewFragment : Fragment() {
 
         } catch (e: Exception) {
             e.printStackTrace()
-            Log.e("SAVE_DATA", "保存数据失败，原因：${e.message}") // print the exception message to the logcat
+            Log.e(
+                "SAVE_DATA",
+                "保存数据失败，原因：${e.message}"
+            ) // print the exception message to the logcat
             false // return false if any exception occurs
         }
-
 
 
     }
@@ -355,10 +339,16 @@ class OverViewFragment : Fragment() {
 
     /**
      * A function to get data from live data and return a one-dimensional array.
+     * 获取listData的数据，并最终返回一个包含所有可变列表的大列表
      */
 
-    private fun getDataFromLiveData(): Array<String> {
+    private fun getDataFromLiveData(): List<List<String>> {
         val result = mutableListOf<String>() // create a mutable list to store the result
+
+        // 分别创建三个数据的可变列表
+        val batteryDataMutableList = mutableListOf<String>()
+        val thermalDataMutableList = mutableListOf<String>()
+        val socDataMutableList = mutableListOf<String>()
 
         // get the current time as a string in HHmmss format
         val timeString = SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault()).format(Date())
@@ -367,23 +357,30 @@ class OverViewFragment : Fragment() {
         // add the time string to the result list
         result.add(timeString)
 
+        /**
+         * 根据checkBox的状态，来保存数据到可变列表
+         * */
+
         if (checked[0]) { // if battery is checked, get data from batteryData and add to the result list
             val battery = batteryViewModel.batteryData.value
             if (battery != null) { // check if battery is not null
-                result.add(battery.level.toString())
-                result.add(battery.status)
-                result.add(battery.current.toString())
-                result.add(battery.temperature.toString())
-                result.add(battery.voltage.toString())
-                result.add(battery.source)
+                batteryDataMutableList.add(timeString) // 首个添加时间戳
+                batteryDataMutableList.add(battery.level.toString())
+                batteryDataMutableList.add(battery.status)
+                batteryDataMutableList.add(battery.current.toString())
+                batteryDataMutableList.add(battery.temperature.toString())
+                batteryDataMutableList.add(battery.voltage.toString())
+                batteryDataMutableList.add(battery.source)
             }
         }
 
         if (checked[1]) { // if thermal is checked, get data from thermalList and add to the result list
             val thermal = thermalViewModel.thermalList.value
             if (thermal != null) { // check if thermal is not null
+                thermalDataMutableList.add(timeString) // 首个添加时间戳
                 for (t in thermal) {
-                    result.add(t.temp)
+
+                    thermalDataMutableList.add(t.temp)
                 }
             }
         }
@@ -391,13 +388,20 @@ class OverViewFragment : Fragment() {
         if (checked[2]) { // if soc is checked, get data from dynamicInfo and add to the result list
             val soc = socViewModel.dynamicInfo.value
             if (soc != null) { // check if soc is not null
+                socDataMutableList.add(timeString) // 首个添加时间戳
                 for (s in soc) {
                     result.add(s.coreFrequency.toString())
                 }
             }
         }
 
-        return result.toTypedArray() // convert the result list to a typed array and return it
+        // 最终返回一个包含所有列表的大列表
+        return listOf(
+            batteryDataMutableList,
+            thermalDataMutableList,
+            socDataMutableList
+        )
+        //return result.toTypedArray() // convert the result list to a typed array and return it
     }
 
 
