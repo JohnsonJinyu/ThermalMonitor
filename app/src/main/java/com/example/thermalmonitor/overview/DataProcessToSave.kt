@@ -1,12 +1,17 @@
 package com.example.thermalmonitor.overview
 
+import com.example.thermalmonitor.soc.SocViewModel
+import com.example.thermalmonitor.thermal.ThermalViewModel
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 
-class DataProcessToSave {
+class DataProcessToSave(
+    private val thermalViewModel: ThermalViewModel,
+    private val socViewModel: SocViewModel
+) {
     /**
      * 这个类的作用是分别对数组中抓取的battery thermal soc 数据处理，写入excel的sheet页
+     * 在类的构造函数中接收viewModel的参数传递
      * */
-
 
 
     /**
@@ -43,14 +48,16 @@ class DataProcessToSave {
     }
 
     fun processThermalData(workbook: XSSFWorkbook, data: Array<Array<String>>) {
-        val sheetThermal =
-            workbook.createSheet("TMData-Thermal") // create a sheet for thermal data
 
-        val titleRowThermal =
-            sheetThermal.createRow(0) // create a title row for thermal data
+        // 为thermal数据创建sheet页
+        val sheetThermal = workbook.createSheet("TMData-Thermal")
+        // 为thermal data 创建 title row
+        val titleRowThermal = sheetThermal.createRow(0)
+        // create a title array for thermal data by adding the timestamp and the types of thermal zones
         val titleArrayThermal =
-            arrayOf("时间戳") + thermalViewModel.thermalList.value!!.map { it.type } // create a title array for thermal data by adding the timestamp and the types of thermal zones
-        for (i in titleArrayThermal.indices) { // loop through the title array and write each title to the title row
+            arrayOf("时间戳") + thermalViewModel.thermalList.value!!.map { it.type }
+        // loop through the title array and write each title to the title row
+        for (i in titleArrayThermal.indices) {
             val cell = titleRowThermal.createCell(i)
             cell.setCellValue(titleArrayThermal[i])
         }
@@ -66,22 +73,26 @@ class DataProcessToSave {
     }
 
     fun processSocData(workbook: XSSFWorkbook, data: Array<Array<String>>) {
-        val sheetSoc = workbook.createSheet("TMData-Soc") // create a sheet for soc data
-
-        val titleRowSoc = sheetSoc.createRow(0) // create a title row for soc data
-        val titleArraySoc =
-            arrayOf("时间戳") + socViewModel.dynamicInfo.value!!.map { "number${it.coreNumber}" } // create a title array for soc data by adding the timestamp and the numbers of cores
-        for (i in titleArraySoc.indices) { // loop through the title array and write each title to the title row
+        // create a sheet for soc data
+        val sheetSoc = workbook.createSheet("TMData-Soc")
+        // create a title row for soc data
+        val titleRowSoc = sheetSoc.createRow(0)
+        // create a title array for soc data by adding the timestamp and the numbers of cores
+        val titleArraySoc = arrayOf("时间戳") + socViewModel.dynamicInfo.value!!.map { "number${it.coreNumber}" }
+        // loop through the title array and write each title to the title row
+        for (i in titleArraySoc.indices) {
             val cell = titleRowSoc.createCell(i)
             cell.setCellValue(titleArraySoc[i])
         }
-        for (i in 1..data.size) { // loop through the data array and write each row of soc data to the sheet
+        // loop through the data array and write each row of soc data to the sheet
+        for (i in 1..data.size) {
             val row = sheetSoc.createRow(i)
             val cell = row.createCell(0)
             cell.setCellValue(data[i - 1][0]) // write the timestamp to the first cell
-            for (j in 1..titleArraySoc.size) {
+            for (j in 1 until titleArraySoc.size) {
                 val cell = row.createCell(j)
-                cell.setCellValue(data[i - 1][j + 6 + checked[1].toInt() * thermalViewModel.thermalList.value!!.size]) // write the frequencies to the rest cells, skipping the first 6 columns of battery data and the columns of thermal data if checked
+                // write the frequencies to the rest cells
+                cell.setCellValue(data[i - 1][j])
             }
         }
     }

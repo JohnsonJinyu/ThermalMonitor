@@ -1,5 +1,6 @@
 package com.example.thermalmonitor.overview
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.ContentValues
 import android.content.Intent
@@ -31,7 +32,7 @@ import timber.log.Timber
 import java.util.Date
 import java.util.Locale
 
-//OverViewFragment.kt
+
 class OverViewFragment : Fragment() {
 
     /**
@@ -43,8 +44,8 @@ class OverViewFragment : Fragment() {
     private val thermalViewModel: ThermalViewModel by viewModels()
     private val socViewModel: SocViewModel by viewModels()
 
-    // 创建 DataProcessToSave类的实例
-    private val dataProcessor = DataProcessToSave()
+    // 声明为成员变量 ,可以确保只有当Fragment处于活跃状态时才会创建DataProcessToSave实例，避免了在已分离的Fragment中访问ViewModel导致的异常
+    private lateinit var dataProcessor: DataProcessToSave
 
     // a variable to indicate whether it is in recording state, default is false
     private var isRecording = false
@@ -53,12 +54,12 @@ class OverViewFragment : Fragment() {
     private var timer = 0
 
     // a two-dimensional array to store the data, default is empty
-    private var data = arrayOf<Array<String>>()
+    private var timeDataArray = arrayOf<Array<String>>()
 
     // 分别给battery，thermal，soc定义二维数组去存储数据
-    private var BatteryDataStoreArray = arrayOf<Array<String>>()
-    private var ThermalDataStoreArray = arrayOf<Array<String>>()
-    private var SocDataStoreArray = arrayOf<Array<String>>()
+    private var batteryDataStoreArray = arrayOf<Array<String>>()
+    private var thermalDataStoreArray = arrayOf<Array<String>>()
+    private var socDataStoreArray = arrayOf<Array<String>>()
 
     // a boolean array to store the user's choices, default is false
     private var checked = booleanArrayOf(false, false, false)
@@ -67,12 +68,16 @@ class OverViewFragment : Fragment() {
     private lateinit var job: Job
 
 
+    @SuppressLint("SetTextI18n")
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
+
+        // 在Fragment处于活跃状态时创建DataProcessToSave实例
+        dataProcessor = DataProcessToSave(thermalViewModel, socViewModel)
 
         // Inflate the layout for this fragment
         val binding = FragmentOverviewBinding.inflate(inflater)
@@ -116,23 +121,24 @@ class OverViewFragment : Fragment() {
                         val batteryRow = allDataList[0].toTypedArray()
                         val thermalRow = allDataList[1].toTypedArray()
                         val socRow = allDataList[2].toTypedArray()
+                        val timeRow = allDataList[3].toTypedArray()
 
                         //val row = getDataFromLiveData() // get a row of data from live data
                         //data += row // add the row to the data array
-                        BatteryDataStoreArray += batteryRow
-                        ThermalDataStoreArray += thermalRow
-                        SocDataStoreArray += socRow
+                        batteryDataStoreArray += batteryRow
+                        thermalDataStoreArray += thermalRow
+                        socDataStoreArray += socRow
+                        timeDataArray += timeRow // 专门用于时间戳的数据记录 ，用于文件名的处理
 
                         timer++ // increase the timer by one second
-                        val updatedTimeString =
-                            String.format(
+                        val updatedTimeString = String.format(
                                 "%02d:%02d:%02d",
                                 timer / 3600,
                                 timer / 60,
                                 timer % 60
                             ) // format the timer to hh:mm:ss
-                        binding.tvTimer.text =
-                            updatedTimeString // show the updated timer on the text view
+                        // show the updated timer on the text view
+                        binding.tvTimer.text = updatedTimeString
                         Timber.tag("DATA").d(
                             """ 
                             batteryRow: ${batteryRow.contentDeepToString()}
@@ -168,9 +174,10 @@ class OverViewFragment : Fragment() {
 
                         //data = arrayOf() // clear the data array
                         //中止清除各个数组的数据
-                        BatteryDataStoreArray = arrayOf()
-                        ThermalDataStoreArray = arrayOf()
-                        SocDataStoreArray = arrayOf()
+                        batteryDataStoreArray = arrayOf()
+                        thermalDataStoreArray = arrayOf()
+                        socDataStoreArray = arrayOf()
+                        timeDataArray = arrayOf()
                     }
                     .setNegativeButton("取消", null)
                     .show()
@@ -190,24 +197,28 @@ class OverViewFragment : Fragment() {
                 job.cancel() // cancel the coroutine
 
                 // get the current time as a string in yyyyMMddHHmm format
-                val currentTime =
-                    SimpleDateFormat("yyyyMMddHHmm", Locale.getDefault()).format(Date())
+                val currentTime = SimpleDateFormat("yyyyMMddHHmm", Locale.getDefault()).format(Date())
 
                 /**
                  * 需要将时间戳的字符串转换为 Date 对象，然后再进行格式化。
                  * 可以使用 SimpleDateFormat 将时间戳的字符串解析为 Date 对象，然后再格式化为你想要的格式。
                  * */
                 val startTime = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.getDefault()).format(
-                    SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault()).parse(data[0][0])
+                    SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault()).parse(timeDataArray[0][0])
                 )
                 val endTime = SimpleDateFormat("HHmmss", Locale.getDefault()).format(Date())
                 val fileName = "TMData-$startTime-$endTime.xlsx"
 
-
-                val result =
-                    saveDataToExcel(fileName) // save data to excel file and get a boolean result, and pass the fileName as a parameter
+                // save data to excel file and get a boolean result, and pass the fileName as a parameter
+                val result = saveDataToExcel(fileName)
 
                 if (result) {
+
+                    //停止后清除各个数组的数据
+                    batteryDataStoreArray = arrayOf()
+                    thermalDataStoreArray = arrayOf()
+                    socDataStoreArray = arrayOf()
+                    timeDataArray = arrayOf()
 
                     // 弹窗提示保存路径
                     AlertDialog.Builder(requireContext())
@@ -261,30 +272,24 @@ class OverViewFragment : Fragment() {
             // 如果电池的checkBox是Checked的状态，则对数据进行处理
             if (checked[0])
             {
-                dataProcessor.processBatteryData(workbook, BatteryDataStoreArray)
+                dataProcessor.processBatteryData(workbook, batteryDataStoreArray)
             }
 
             // 如果温度的checkBox是checked的状态，则对数据进行处理
             if (checked[1])
             {
-                dataProcessor.processThermalData(workbook,ThermalDataStoreArray)
+                dataProcessor.processThermalData(workbook,thermalDataStoreArray)
             }
 
-
             // 如果芯片的checkBox是checked的状态，则对数据进行处理
-            if (checked[2]) { // if soc is checked, create a sheet for soc data and write data to it
-
-                dataProcessor.processSocData(workbook,SocDataStoreArray)
+            if (checked[2])
+            {
+                dataProcessor.processSocData(workbook,socDataStoreArray)
             }
 
 
             // 指定文件的MIME类型
-
             val mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-
-
-            // 获取文件的显示名称，这里假设是 fileName
-            val displayName = fileName
 
             // 获取文件的相对路径，这里指定为 files/ThermalMonitor 目录
             val relativePath = "${Environment.DIRECTORY_DOWNLOADS}/ThermalMonitor"
@@ -343,8 +348,8 @@ class OverViewFragment : Fragment() {
      */
 
     private fun getDataFromLiveData(): List<List<String>> {
-        val result = mutableListOf<String>() // create a mutable list to store the result
 
+        val singleTimeMutableList = mutableListOf<String>() // create a mutable list to store the result
         // 分别创建三个数据的可变列表
         val batteryDataMutableList = mutableListOf<String>()
         val thermalDataMutableList = mutableListOf<String>()
@@ -354,8 +359,8 @@ class OverViewFragment : Fragment() {
         val timeString = SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault()).format(Date())
 
 
-        // add the time string to the result list
-        result.add(timeString)
+        // add the time string to the singleTimeMutableList
+        singleTimeMutableList.add(timeString)
 
         /**
          * 根据checkBox的状态，来保存数据到可变列表
@@ -379,7 +384,6 @@ class OverViewFragment : Fragment() {
             if (thermal != null) { // check if thermal is not null
                 thermalDataMutableList.add(timeString) // 首个添加时间戳
                 for (t in thermal) {
-
                     thermalDataMutableList.add(t.temp)
                 }
             }
@@ -390,7 +394,7 @@ class OverViewFragment : Fragment() {
             if (soc != null) { // check if soc is not null
                 socDataMutableList.add(timeString) // 首个添加时间戳
                 for (s in soc) {
-                    result.add(s.coreFrequency.toString())
+                    socDataMutableList.add(s.coreFrequency.toString())
                 }
             }
         }
@@ -399,7 +403,9 @@ class OverViewFragment : Fragment() {
         return listOf(
             batteryDataMutableList,
             thermalDataMutableList,
-            socDataMutableList
+            socDataMutableList,
+            singleTimeMutableList
+
         )
         //return result.toTypedArray() // convert the result list to a typed array and return it
     }
