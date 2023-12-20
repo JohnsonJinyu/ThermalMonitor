@@ -1,24 +1,17 @@
 package com.example.thermalmonitor
 
-import android.content.Context
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
-import android.view.WindowManager
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.example.thermalmonitor.battery.BatteryFragment
+import com.example.thermalmonitor.filesList.FilesListFragment
 import com.example.thermalmonitor.overview.OverViewFragment
 import com.example.thermalmonitor.soc.SocFragment
 import com.example.thermalmonitor.thermal.ThermalFragment
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
-import java.security.Permission
 
 class MainActivity : AppCompatActivity(){
 
@@ -60,6 +53,7 @@ class MainActivity : AppCompatActivity(){
                     1 -> R.string.TabName_Battery
                     2 -> R.string.TabName_Thermal
                     3 -> R.string.TabName_Soc
+                    4 -> R.string.TabName_LocalFiles
 
                     else -> throw IllegalStateException("Invalid position : $position")
 
@@ -77,7 +71,7 @@ class MainActivity : AppCompatActivity(){
 
         //返回总的页面数
         override fun getItemCount():Int{
-            return 4
+            return 5
         }
         //根据位置返回对应的Fragment实例
         override fun createFragment(position: Int): Fragment {
@@ -86,6 +80,7 @@ class MainActivity : AppCompatActivity(){
                 1 -> BatteryFragment()
                 2 -> ThermalFragment()
                 3 -> SocFragment()
+                4 -> FilesListFragment()
 
                 else -> throw java.lang.IllegalStateException("Invalid position: $position")
             }

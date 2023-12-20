@@ -5,6 +5,8 @@
     <string name="TabName_Battery">电池</string>
     <string name="TabName_Thermal">温度</string>
     <string name="TabName_Soc">芯片</string>
+    <string name="TabName_LocalFiles">本地文件</string>
+
 
     <string name="battery_level_title">Battery_Level</string>
     <string name="battery_status_title">Battery_Status</string>
@@ -15,6 +17,7 @@
     <string name="checkBoxString_Battery">电池</string>
     <string name="checkBoxString_Temperature">温度</string>
     <string name="checkBoxString_Soc">Soc</string>
+
 
 
 </resources>
