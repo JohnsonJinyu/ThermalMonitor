@@ -54,8 +54,7 @@ class DataProcessToSave(
         // 为thermal data 创建 title row
         val titleRowThermal = sheetThermal.createRow(0)
         // create a title array for thermal data by adding the timestamp and the types of thermal zones
-        val titleArrayThermal =
-            arrayOf("时间戳") + thermalViewModel.thermalList.value!!.map { it.type }
+        val titleArrayThermal = arrayOf("时间戳") + thermalViewModel.thermalList.value!!.map { it.type }
         // loop through the title array and write each title to the title row
         for (i in titleArrayThermal.indices) {
             val cell = titleRowThermal.createCell(i)

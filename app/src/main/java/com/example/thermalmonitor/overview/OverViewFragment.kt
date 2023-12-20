@@ -349,6 +349,7 @@ class OverViewFragment : Fragment() {
 
     private fun getDataFromLiveData(): List<List<String>> {
 
+        // 创建单独的时间可变列表用于文件名时间
         val singleTimeMutableList = mutableListOf<String>() // create a mutable list to store the result
         // 分别创建三个数据的可变列表
         val batteryDataMutableList = mutableListOf<String>()
@@ -358,6 +359,8 @@ class OverViewFragment : Fragment() {
         // get the current time as a string in HHmmss format
         val timeString = SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault()).format(Date())
 
+        // create a SimpleDateFormat object for the target format,这个格式是用于excel中的时间戳
+        val timeStamp = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
 
         // add the time string to the singleTimeMutableList
         singleTimeMutableList.add(timeString)
@@ -369,7 +372,8 @@ class OverViewFragment : Fragment() {
         if (checked[0]) { // if battery is checked, get data from batteryData and add to the result list
             val battery = batteryViewModel.batteryData.value
             if (battery != null) { // check if battery is not null
-                batteryDataMutableList.add(timeString) // 首个添加时间戳
+                //batteryDataMutableList.add(timeString) // 首个添加时间戳
+                batteryDataMutableList.add(timeStamp) // 首个添加时间戳
                 batteryDataMutableList.add(battery.level.toString())
                 batteryDataMutableList.add(battery.status)
                 batteryDataMutableList.add(battery.current.toString())
@@ -382,7 +386,7 @@ class OverViewFragment : Fragment() {
         if (checked[1]) { // if thermal is checked, get data from thermalList and add to the result list
             val thermal = thermalViewModel.thermalList.value
             if (thermal != null) { // check if thermal is not null
-                thermalDataMutableList.add(timeString) // 首个添加时间戳
+                thermalDataMutableList.add(timeStamp) // 首个添加时间戳
                 for (t in thermal) {
                     thermalDataMutableList.add(t.temp)
                 }
@@ -392,7 +396,7 @@ class OverViewFragment : Fragment() {
         if (checked[2]) { // if soc is checked, get data from dynamicInfo and add to the result list
             val soc = socViewModel.dynamicInfo.value
             if (soc != null) { // check if soc is not null
-                socDataMutableList.add(timeString) // 首个添加时间戳
+                socDataMutableList.add(timeStamp) // 首个添加时间戳
                 for (s in soc) {
                     socDataMutableList.add(s.coreFrequency.toString())
                 }
