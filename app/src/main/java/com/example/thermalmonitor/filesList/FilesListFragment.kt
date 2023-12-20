@@ -1,11 +1,13 @@
 package com.example.thermalmonitor.filesList
 
 import android.os.Bundle
+import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.thermalmonitor.databinding.FragmentFileslistBinding
+import java.io.File
 
 
 class FilesListFragment : Fragment() {
@@ -27,6 +29,11 @@ class FilesListFragment : Fragment() {
 
 
         return binding.root
+    }
+
+    val folder = File(Environment.getExternalStorageDirectory(),"/Download/thermalMonitor")
+    val files = folder.listFiles { file ->
+        file.isFile && file.name.endsWith(".xlsx")
     }
 
 }
