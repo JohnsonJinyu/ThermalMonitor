@@ -10,7 +10,12 @@ import com.example.thermalmonitor.databinding.FragmentFileslistBinding
 
 class FilesListFragment : Fragment() {
 
+    // 创建视图绑定
     private lateinit var binding: FragmentFileslistBinding
+
+    // 获取recyclerView的引用
+    private val recycler by lazy { binding.recyclerViewFiles }
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
