@@ -3,6 +3,7 @@ package com.example.thermalmonitor.filesList
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Environment
+import android.os.FileObserver
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,7 +23,7 @@ class FilesListFragment : Fragment() {
     // 获取recyclerView的引用
     private val recycler by lazy { binding.recyclerViewFiles }
 
-
+    private lateinit var fileList : List<ExcelFile>
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -37,7 +38,7 @@ class FilesListFragment : Fragment() {
     @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-        val fileList = getFileList()
+        fileList = getFileList()
         fileAdapter = FileAdapter(requireContext(),fileList)
         recycler.adapter = fileAdapter
 
@@ -45,6 +46,7 @@ class FilesListFragment : Fragment() {
         recycler.setHasFixedSize(true)
 
 
+        fileObserver.startWatching()
         // 手动调用适配器的 notifyDataSetChanged 方法来刷新视图
         fileAdapter.notifyDataSetChanged()
     }
@@ -66,9 +68,31 @@ class FilesListFragment : Fragment() {
     }
 
 
+
+
     private fun getRawFileList(): Array<File>? {
         val folder = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"ThermalMonitor")
         return folder.listFiles()
+    }
+
+
+    // Define a FileObserver to monitor the folder changes
+    val folder = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"ThermalMonitor")
+    private val fileObserver = object : FileObserver(folder.path) {
+        @SuppressLint("NotifyDataSetChanged")
+        override fun onEvent(event: Int, path: String?) {
+            // If a file is created, modified, or deleted, update the fileList and notify the adapter
+            if (event == FileObserver.CREATE || event == FileObserver.MODIFY || event == FileObserver.DELETE) {
+                fileList = getFileList()
+                fileAdapter.notifyDataSetChanged()
+            }
+        }
+    }
+
+    // Stop the FileObserver in onDestroyView()
+    override fun onDestroyView() {
+        super.onDestroyView()
+        fileObserver.stopWatching()
     }
 
 }

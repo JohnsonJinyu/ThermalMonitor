@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -197,7 +198,7 @@ class OverViewFragment : Fragment() {
                 job.cancel() // cancel the coroutine
 
                 // get the current time as a string in yyyyMMddHHmm format
-                val currentTime = SimpleDateFormat("yyyyMMddHHmm", Locale.getDefault()).format(Date())
+                //val currentTime = SimpleDateFormat("yyyyMMddHHmm", Locale.getDefault()).format(Date())
 
                 /**
                  * 需要将时间戳的字符串转换为 Date 对象，然后再进行格式化。
@@ -414,6 +415,9 @@ class OverViewFragment : Fragment() {
         //return result.toTypedArray() // convert the result list to a typed array and return it
     }
 
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    }
 
     /**
      * A helper function to convert a boolean value to an int value, 0 for false and 1 for true.
