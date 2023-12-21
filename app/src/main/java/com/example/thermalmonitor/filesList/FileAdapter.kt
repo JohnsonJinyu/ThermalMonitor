@@ -1,37 +1,55 @@
 package com.example.thermalmonitor.filesList
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.Recycler
-import com.example.thermalmonitor.R
+import com.example.thermalmonitor.databinding.ItemFileBinding
+import java.io.File
 
-abstract class FileAdapter(private val files: List<ExcelFile>) :
+class FileAdapter(private val context: Context,
+                  private val filesList: List<ExcelFile> ) :
     RecyclerView.Adapter<FileAdapter.ViewHolder>() {
 
 
+    inner class ViewHolder(val binding: ItemFileBinding) : RecyclerView.ViewHolder(binding.root)
+    {
+        init {
+            itemView.setOnClickListener {
+                val file = filesList[adapterPosition]
+                openFile(file)
+            }
+        }
 
-
-    //创建ViewHolder
-
-    //定义Item 的布局,负责缓存View的引用
-    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val tvName = view.findViewById<TextView>(R.id.tv_name)
+        private fun openFile(file: ExcelFile){
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.setDataAndType(Uri.fromFile(File(file.filePath)),"application/vnd.ms-excel")
+            context.startActivity(intent)
+        }
     }
-
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_file, parent, false)
-        return ViewHolder(view)
+        val binding = ItemFileBinding.inflate(LayoutInflater.from(parent.context),parent,false)
+        return ViewHolder(binding)
+    }
+
+    override fun getItemCount(): Int {
+        return filesList.size
     }
 
 
-    //绑定数据到ViewHolder
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val file = files[position]
-        holder.tvName.text = file.name
+
+        val file = filesList[position]
+
+        holder.binding.apply {
+            tvFileName.text = file.fileName
+            tvFileSize.text = file.fileSize.toString()
+            tvFileModificationTime.text = file.fileMTTime.toString()
+        }
+
     }
+
 }
