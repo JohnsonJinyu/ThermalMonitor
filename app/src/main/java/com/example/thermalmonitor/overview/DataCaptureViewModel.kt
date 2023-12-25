@@ -1,12 +1,12 @@
 package com.example.thermalmonitor.overview
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.ContentValues
 import android.content.Context
 import android.icu.text.SimpleDateFormat
 import android.os.Environment
 import android.provider.MediaStore
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -32,7 +32,7 @@ class DataCaptureViewModel(
     private val thermalViewModel: ThermalViewModel,
     private val socViewModel: SocViewModel,
     private val dataProcessor: DataProcessToSave,
-    private val context: Context,
+    @SuppressLint("StaticFieldLeak") private val context: Context,
     private val openFolderListener: OpenFolderListener // 添加一个接口参数
 ) : ViewModel() {
 
@@ -299,10 +299,7 @@ class DataCaptureViewModel(
 
         } catch (e: Exception) {
             e.printStackTrace()
-            Log.e(
-                "SAVE_DATA",
-                "保存数据失败，原因：${e.message}"
-            ) // print the exception message to the logcat
+            Timber.tag("SAVE_DATA").e("保存数据失败，原因：%s", e.message) // print the exception message to the logcat
             false // return false if any exception occurs
         }
 

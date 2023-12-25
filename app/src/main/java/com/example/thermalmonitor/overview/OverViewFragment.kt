@@ -170,10 +170,7 @@ class OverViewFragment : Fragment() ,OpenFolderListener {
 
 
 
-    /**
-     * A helper function to convert a boolean value to an int value, 0 for false and 1 for true.
-     */
-    private fun Boolean.toInt() = if (this) 1 else 0
+
 
 }
 
