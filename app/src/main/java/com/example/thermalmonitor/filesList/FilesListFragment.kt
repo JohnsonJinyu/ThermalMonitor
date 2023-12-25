@@ -1,14 +1,18 @@
 package com.example.thermalmonitor.filesList
 
 import android.annotation.SuppressLint
+import android.graphics.drawable.GradientDrawable.Orientation
 import android.os.Bundle
 import android.os.Environment
 import android.os.FileObserver
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.ui.Alignment
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.thermalmonitor.databinding.FragmentFileslistBinding
 import java.io.File
 
@@ -42,7 +46,8 @@ class FilesListFragment : Fragment() {
         fileAdapter = FileAdapter(requireContext(),fileList)
         recycler.adapter = fileAdapter
 
-        recycler.layoutManager = LinearLayoutManager(context,LinearLayoutManager.VERTICAL,false)
+        recycler.layoutManager = GridLayoutManager(context,1, RecyclerView.VERTICAL,false)
+        //recycler.layoutManager = LinearLayoutManager(context,LinearLayoutManager.VERTICAL,false)
         recycler.setHasFixedSize(true)
 
 

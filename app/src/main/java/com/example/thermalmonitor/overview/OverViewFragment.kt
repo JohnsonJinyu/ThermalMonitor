@@ -17,6 +17,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -49,7 +50,7 @@ class OverViewFragment : Fragment() {
     private lateinit var dataProcessor: DataProcessToSave
 
     // a variable to indicate whether it is in recording state, default is false
-    private var isRecording = false
+    var isRecording = false
 
     // a variable to represent the timer, default is 0
     private var timer = 0
@@ -103,11 +104,14 @@ class OverViewFragment : Fragment() {
         }
 
 
+
         /**
          * 设置开始按钮的点击事件
          * */
         binding.btnStart.setOnClickListener {
             if (!isRecording) { // if not in recording state, start recording and update UI
+                startDataCaptureService()
+
                 isRecording = true
                 job = lifecycleScope.launch(Dispatchers.Main) {
                     // Reset timer and timeString to initial values
@@ -197,8 +201,7 @@ class OverViewFragment : Fragment() {
                 isRecording = false // stop recording state
                 job.cancel() // cancel the coroutine
 
-                // get the current time as a string in yyyyMMddHHmm format
-                //val currentTime = SimpleDateFormat("yyyyMMddHHmm", Locale.getDefault()).format(Date())
+                stopDataCaptureService()
 
                 /**
                  * 需要将时间戳的字符串转换为 Date 对象，然后再进行格式化。
@@ -259,6 +262,18 @@ class OverViewFragment : Fragment() {
         }
         return binding.root
 
+    }
+
+
+    private fun startDataCaptureService() {
+        val serviceIntent = Intent(requireContext(), DataCaptureService::class.java)
+        ContextCompat.startForegroundService(requireContext(), serviceIntent)
+    }
+
+
+    private fun stopDataCaptureService() {
+        val serviceIntent = Intent(requireContext(), DataCaptureService::class.java)
+        requireContext().stopService(serviceIntent)
     }
 
 
