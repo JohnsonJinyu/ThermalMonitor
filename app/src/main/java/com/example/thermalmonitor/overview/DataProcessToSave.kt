@@ -47,6 +47,9 @@ class DataProcessToSave(
 
     }
 
+    /**
+     *这部分是对Thermal数据的处理
+     * */
     fun processThermalData(workbook: XSSFWorkbook, data: Array<Array<String>>) {
 
         // 为thermal数据创建sheet页
@@ -71,6 +74,9 @@ class DataProcessToSave(
         }
     }
 
+    /**
+     *这部分是对Soc数据的处理
+     * */
     fun processSocData(workbook: XSSFWorkbook, data: Array<Array<String>>) {
         // create a sheet for soc data
         val sheetSoc = workbook.createSheet("TMData-Soc")

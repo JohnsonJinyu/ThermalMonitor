@@ -20,7 +20,7 @@ class ThermalViewModel: ViewModel() {
         get() = _thermalList
 
     init {
-        //在ViewModel的作用域内启动一个现成，在后台线程执行读取和处理数据的任务，每秒执行一次，使用exec()的方式
+        //在ViewModel的作用域内启动一个线程，在后台线程执行读取和处理数据的任务，每秒执行一次，使用exec()的方式
         //调用cat命令读取文件内容
         viewModelScope.launch(Dispatchers.IO){
             while (true){

@@ -10,15 +10,14 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.example.thermalmonitor.MainActivity
-import com.example.thermalmonitor.R
-import kotlinx.coroutines.Job
 
 class DataCaptureService : Service()  {
     //在这里实现数据抓取和其他必要的功能
 
     private lateinit var notificationBuilder: NotificationCompat.Builder
 
-
+    // 定义一个变量去判定是否在抓取状态，默认false
+    private var isRecording = false
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -30,15 +29,21 @@ class DataCaptureService : Service()  {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        //将服务设置为一个前台服务，并显示一个通知
-        val notification = createNotification()
-        startForeground(NOTIFICATION_ID,notification)
+        while (!isRecording)
+        {
+            // 在这里启动你的数据抓取逻辑,将服务设置为一个前台服务，并显示一个通知
+            startDataCapture()
+            showNitification()
 
-        // 在这里启动你的数据抓取逻辑
-        startDataCapture()
+            isRecording = true
+        }
         return START_STICKY
     }
 
+    private fun showNitification() {
+        val notification = createNotification()
+        startForeground(NOTIFICATION_ID,notification)
+    }
 
 
     override fun onDestroy() {
@@ -97,4 +102,8 @@ class DataCaptureService : Service()  {
     companion object {
         private const val NOTIFICATION_ID = 1
     }
+
+
+
+
 }
