@@ -6,6 +6,7 @@ import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.example.thermalmonitor.R
 import com.example.thermalmonitor.databinding.ItemFileBinding
 import java.io.File
 
@@ -33,6 +34,7 @@ class FileAdapter(private val context: Context,
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemFileBinding.inflate(LayoutInflater.from(parent.context),parent,false)
         return ViewHolder(binding)
+        //return ViewHolder(LayoutInflater.from(context).inflate(R.layout.item_file),parent,false)
     }
 
     override fun getItemCount(): Int {
@@ -41,6 +43,8 @@ class FileAdapter(private val context: Context,
 
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+
+
 
         val file = filesList[position]
 
