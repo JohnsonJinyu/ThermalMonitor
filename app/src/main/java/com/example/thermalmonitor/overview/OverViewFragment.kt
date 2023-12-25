@@ -168,7 +168,15 @@ class OverViewFragment : Fragment() ,OpenFolderListener {
     }
 
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
+    }
+
+
+
+    /**
+     * part of request permissions
+     * */
 
 
 
