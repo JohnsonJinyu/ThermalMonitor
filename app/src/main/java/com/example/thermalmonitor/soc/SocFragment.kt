@@ -21,7 +21,10 @@ class SocFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentSocBinding.inflate(inflater, container, false) // 初始化view binding
-        viewModel = ViewModelProvider(this)[SocViewModel::class.java] // 初始化view model
+        //viewModel = ViewModelProvider(this)[SocViewModel::class.java] // 初始化view model
+        viewModel = ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application))[SocViewModel::class.java]
+
+
         adapter = SocAdapter() // 初始化adapter
         binding.recyclerView.adapter = adapter // 绑定adapter到recycler view
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext()) // 设置recycler view的布局管理器为线性布局

@@ -2,11 +2,14 @@ package com.example.thermalmonitor.overview
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.os.PowerManager
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,7 +23,7 @@ import com.example.thermalmonitor.soc.SocViewModel
 import com.example.thermalmonitor.thermal.ThermalViewModel
 
 
-class OverViewFragment : Fragment() ,OpenFolderListener {
+class OverViewFragment : Fragment(), OpenFolderListener {
 
     /**
      * 这个类的目的是将读取的数据保存到设备
@@ -54,14 +57,18 @@ class OverViewFragment : Fragment() ,OpenFolderListener {
         val socViewModel = ViewModelProvider(this)[SocViewModel::class.java]
         val dataProcessor = DataProcessToSave(thermalViewModel, socViewModel)
 
-
         // Create the ViewModelFactory and pass the dependencies
-        val viewModelFactory = ViewModelFactory(batteryViewModel, thermalViewModel, socViewModel, dataProcessor, requireContext(),this)
+        val viewModelFactory = ViewModelFactory(
+            batteryViewModel,
+            thermalViewModel,
+            socViewModel,
+            dataProcessor,
+            requireContext(),
+            this
+        )
 
         // Initialize the DataCaptureViewModel using the ViewModelFactory
         viewModel = ViewModelProvider(this, viewModelFactory)[DataCaptureViewModel::class.java]
-
-
 
 
         /**
@@ -95,8 +102,9 @@ class OverViewFragment : Fragment() ,OpenFolderListener {
         }
 
 
-
-
+        /**
+         * 定义viewModel中liveData的观察者
+         * */
 
         // 观察 timer 的变化，并更新界面
         viewModel.timer.observe(viewLifecycleOwner) { timeString ->
@@ -112,8 +120,6 @@ class OverViewFragment : Fragment() ,OpenFolderListener {
         viewModel.showAbortDialog.observe(viewLifecycleOwner) {
             showAbortConfirmationDialog()
         }
-
-
 
 
         /**
@@ -158,11 +164,11 @@ class OverViewFragment : Fragment() ,OpenFolderListener {
     }
 
 
-
     // 实现 OpenFolderListener 接口的方法，在这里启动新的活动
     override fun openFolder() {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
-        val uri = Uri.parse(Environment.getExternalStorageDirectory().path + "/Download/ThermalMonitor/")
+        val uri =
+            Uri.parse(Environment.getExternalStorageDirectory().path + "/Download/ThermalMonitor/")
         intent.setDataAndType(uri, "*/*")
         startActivity(Intent.createChooser(intent, "Open folder"))
     }
@@ -172,13 +178,87 @@ class OverViewFragment : Fragment() ,OpenFolderListener {
 
     }
 
+    override fun onResume() {
+        super.onResume()
+        //checkAndRequestPermissions()
+    }
 
 
     /**
      * part of request permissions
      * */
 
+    private fun checkAndRequestPermissions() {
+        requestOverlayPermission()
+        requestBatteryOptimizationPermission()
+        requestManageExternalStoragePermission()
+    }
 
+    companion object {
+        private const val REQUEST_OVERLAY_PERMISSION = 101
+        private const val REQUEST_BATTERY_OPTIMIZATION_PERMISSION = 102
+        private const val REQUEST_MANAGE_EXTERNAL_STORAGE_PERMISSION = 103
+    }
+
+    private fun requestOverlayPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(
+                requireContext()
+            )
+        ) {
+            val intent = Intent(
+                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                Uri.parse("package:" + requireContext().packageName)
+            )
+            startActivityForResult(intent, REQUEST_OVERLAY_PERMISSION)
+        }
+    }
+
+    private fun requestBatteryOptimizationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val intent = Intent()
+            intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+            intent.data = Uri.parse("package:" + requireContext().packageName)
+            startActivityForResult(intent, REQUEST_BATTERY_OPTIMIZATION_PERMISSION)
+        }
+    }
+
+    private fun requestManageExternalStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
+            val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
+            startActivityForResult(intent, REQUEST_MANAGE_EXTERNAL_STORAGE_PERMISSION)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_OVERLAY_PERMISSION) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Settings.canDrawOverlays(
+                    requireContext()
+                )
+            ) {
+                // 悬浮窗权限已经被授予
+            } else {
+                // 用户未授予悬浮窗权限
+            }
+        } else if (requestCode == REQUEST_BATTERY_OPTIMIZATION_PERMISSION) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !isIgnoringBatteryOptimizations()) {
+                // 用户未忽略电池优化
+            } else {
+                // 用户已经忽略电池优化
+            }
+        } else if (requestCode == REQUEST_MANAGE_EXTERNAL_STORAGE_PERMISSION) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && Environment.isExternalStorageManager()) {
+                // 外部存储管理权限已经被授予
+            } else {
+                // 用户未授予外部存储管理权限
+            }
+        }
+    }
+
+    private fun isIgnoringBatteryOptimizations(): Boolean {
+        val powerManager = requireContext().getSystemService(Context.POWER_SERVICE) as PowerManager
+        return powerManager.isIgnoringBatteryOptimizations(requireContext().packageName)
+    }
 
 }
 

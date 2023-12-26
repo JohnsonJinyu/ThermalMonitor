@@ -1,5 +1,10 @@
 # ThermalMonitor版本更新记录
 
+## 2023/12/26
+### 改善点
+- 将权限申请从MainActivity 调整到OverViewFragment
+- 
+
 ## 2023/12/25
 ### 改善点
 - 重构OverViewFragment部分，改为MVVM架构，用于抓取收据的时候可以后台运行，实际效果待验证测试
