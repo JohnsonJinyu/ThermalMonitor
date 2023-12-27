@@ -1,9 +1,10 @@
 package com.example.thermalmonitor.filesList
 
 import android.annotation.SuppressLint
+import android.database.ContentObserver
 import android.os.Bundle
 import android.os.Environment
-import android.os.FileObserver
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -47,8 +48,12 @@ class FilesListFragment : Fragment() {
         recycler.setHasFixedSize(true)
 
 
-        fileObserver.startWatching()
-        // 手动调用适配器的 notifyDataSetChanged 方法来刷新视图
+        // 注册内容观察者
+        requireContext().contentResolver.registerContentObserver(
+            MediaStore.Files.getContentUri("external"),
+            true,
+            observer
+        )
         fileAdapter.notifyDataSetChanged()
     }
 
@@ -79,22 +84,14 @@ class FilesListFragment : Fragment() {
 
 
     // Define a FileObserver to monitor the folder changes
-    val folder = File(
-        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-        "ThermalMonitor"
-    )
-    private val fileObserver = object : FileObserver(folder.path) {
-        @SuppressLint("NotifyDataSetChanged")
-        override fun onEvent(event: Int, path: String?) {
-            // If a file is created, modified, or deleted, update the fileList and notify the adapter
-            if (event == CREATE || event == MODIFY || event == DELETE) {
-                activity?.runOnUiThread { //使用了 activity?.runOnUiThread 方法 确保文件列表和adapter的更新操作在主线程中进行
-                    fileList = getFileList()
-                    fileAdapter.notifyDataSetChanged()
-                }
-            }
+    private val observer = object : ContentObserver(null) {
+
+        override fun onChange(selfChange: Boolean) {
+            refreshFileList()
         }
+
     }
+
 
 
 
@@ -102,8 +99,9 @@ class FilesListFragment : Fragment() {
 
     // Stop the FileObserver in onDestroyView()
     override fun onDestroyView() {
+        // 取消注册内容观察者
+        requireContext().contentResolver.unregisterContentObserver(observer)
         super.onDestroyView()
-        fileObserver.stopWatching()
     }
 
 
