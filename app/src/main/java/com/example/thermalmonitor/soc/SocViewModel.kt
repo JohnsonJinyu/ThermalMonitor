@@ -90,14 +90,14 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
             if (dynamicInfoFile.canRead()) {
                 // 读取文件的逻辑
                 val list = mutableListOf<DynamicInfo>() // 创建一个动态信息列表，用于存储读取到的数据
-                Timber.tag("SocViewModel").d("coreCount = " + staticInfo.value?.coreCount)
+                Timber.tag("SocViewModel").d("coreCount = %s", staticInfo.value?.coreCount)
 
                 for (i in 0 until (staticInfo.value?.coreCount ?: 0).toInt()) { // 遍历每个核心，根据核心数来确定循环次数
                     val file =
                         File(dynamicInfoFile, "cpu$i/cpufreq/scaling_cur_freq") // 根据核心编号，拼接出对应的文件路径
                     val frequency =
                         file.readText().trim().toInt() / 1000 // 读取文件内容，并转换为整数，并除以1000得到MHz单位
-                    Timber.tag("SocViewModel").d("frequency = " + frequency)
+                    Timber.tag("SocViewModel").d("frequency = %s", frequency)
                     val info = DynamicInfo(i + 1, frequency) // 创建一个动态信息对象，用于存储核心编号和频率
                     list.add(info) // 将对象添加到列表中
                 }

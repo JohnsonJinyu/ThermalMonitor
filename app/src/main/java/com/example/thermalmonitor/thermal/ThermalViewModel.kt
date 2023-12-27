@@ -67,7 +67,8 @@ class ThermalViewModel: ViewModel() {
             }
             reader.close()
             process.waitFor()
-            output.toString()
+            output?.toString() ?: ""
+            //output.toString()
         }catch (e:Exception){
             e.printStackTrace()
             ""
