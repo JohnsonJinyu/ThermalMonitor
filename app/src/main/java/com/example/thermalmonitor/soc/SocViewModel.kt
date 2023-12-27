@@ -90,17 +90,15 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
             if (dynamicInfoFile.canRead()) {
                 // 读取文件的逻辑
                 val list = mutableListOf<DynamicInfo>() // 创建一个动态信息列表，用于存储读取到的数据
-                Timber.tag("SocViewModel").d("coreCount = %s", staticInfo.value?.coreCount)
 
                 for (i in 0 until (staticInfo.value?.coreCount ?: 0).toInt()) { // 遍历每个核心，根据核心数来确定循环次数
-                    val file =
-                        File(dynamicInfoFile, "cpu$i/cpufreq/scaling_cur_freq") // 根据核心编号，拼接出对应的文件路径
-                    val frequency =
-                        file.readText().trim().toInt() / 1000 // 读取文件内容，并转换为整数，并除以1000得到MHz单位
-                    Timber.tag("SocViewModel").d("frequency = %s", frequency)
+                    val file = File(dynamicInfoFile, "cpu$i/cpufreq/scaling_cur_freq") // 根据核心编号，拼接出对应的文件路径
+                    val frequency = file.readText().trim().toInt() / 1000 // 读取文件内容，并转换为整数，并除以1000得到MHz单位
                     val info = DynamicInfo(i + 1, frequency) // 创建一个动态信息对象，用于存储核心编号和频率
                     list.add(info) // 将对象添加到列表中
                 }
+
+                _dynamicInfo.postValue(list) // 在子线程中更新动态信息的数据，使用postValue方法
             } else {
                 // 记录日志，提示文件访问权限受限
                 Timber.tag("SocViewModel").e("Permission denied: Cannot read dynamic info file")
@@ -112,7 +110,10 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
             // 捕获其他异常，记录日志
             Timber.tag("SocViewModel").e(e, "Failed to read dynamic info file")
         }
+
+        handler.postDelayed({ readDynamicInfo() }, 1000) // 使用handler延迟1秒后再次执行该任务，实现定时刷新
     }
+
 
 
 
