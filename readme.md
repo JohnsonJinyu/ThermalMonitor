@@ -1,9 +1,19 @@
 # ThermalMonitor版本更新记录
 
+## 2023/12/27
+### 改善点
+- 重磅！！ 困扰好久的fragment_FileList不能显示完整的原因是viewpager的layout_height = "warp_content" ,已修复
+- soc、thermal读取数据的部分 优化一些逻辑上的问题
+
+### 存在的问题及需要补充挂的功能
+- 文件列表点击跳转选择其他应用打开这个功能需要补充 显示的格式需要优化
+- 权限申请的时机 需要优化 ，目前暂时禁用
+- 悬浮窗功能待做
+
 ## 2023/12/26
 ### 改善点
 - 将权限申请从MainActivity 调整到OverViewFragment
-- 
+
 
 ## 2023/12/25
 ### 改善点
