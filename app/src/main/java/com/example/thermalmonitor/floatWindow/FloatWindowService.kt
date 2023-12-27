@@ -3,6 +3,7 @@ package com.example.thermalmonitor.floatWindow
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.os.Binder
 import android.os.IBinder
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +15,9 @@ class FloatWindowService : Service() {
 
     private lateinit var windowManager: WindowManager
     private lateinit var floatView: View
+
+    // 定义一个 Binder 对象
+    private val binder = FloatWindowBinder()
 
     override fun onCreate() {
         super.onCreate()
@@ -43,17 +47,26 @@ class FloatWindowService : Service() {
         super.onDestroy()
     }
 
+    // 重写 onBind 方法，返回 Binder 对象
     override fun onBind(intent: Intent?): IBinder? {
-        return null
+        return binder
     }
 
     // 启动悬浮窗的方法
-    private fun startFloatWindowService() {
+    fun startFloatWindowService() {
         startService(Intent(this, FloatWindowService::class.java))
     }
 
     // 停止悬浮窗的方法
-    private fun stopFloatWindowService() {
+    fun stopFloatWindowService() {
         stopService(Intent(this, FloatWindowService::class.java))
     }
+
+
+    // 定义一个内部类，继承自 Binder
+    inner class FloatWindowBinder : Binder() {
+        // 定义一个方法，返回服务的引用
+        fun getService(): FloatWindowBinder = this
+    }
+
 }
