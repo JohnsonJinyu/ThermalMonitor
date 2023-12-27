@@ -8,6 +8,9 @@ import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.example.thermalmonitor.databinding.ItemFileBinding
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class FileAdapter(
     private val context: Context,
@@ -51,9 +54,23 @@ class FileAdapter(
         val file = filesList[position]
         holder.binding.apply {
             tvFileName.text = file.fileName
-            tvFileSize.text = file.fileSize.toString()
-            tvFileModificationTime.text = file.fileMTTime.toString()
+            tvFileSize.text = getReadableFileSize(file.fileSize)
+            tvFileModificationTime.text = getReadableDateTime(file.fileMTTime)
         }
+    }
+
+    // 转换文件大小为可读格式
+    private fun getReadableFileSize(size: Long): String {
+        if (size <= 0) return "0"
+        val units = arrayOf("B", "KB", "MB", "GB", "TB")
+        val digitGroups = (Math.log10(size.toDouble()) / Math.log10(1024.0)).toInt()
+        return "%.1f %s".format(size / Math.pow(1024.0, digitGroups.toDouble()), units[digitGroups])
+    }
+
+    // 转换Unix时间格式为可读格式
+    private fun getReadableDateTime(time: Long): String {
+        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        return sdf.format(Date(time))
     }
 
 }

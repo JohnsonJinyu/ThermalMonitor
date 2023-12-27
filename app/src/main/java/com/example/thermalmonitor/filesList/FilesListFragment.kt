@@ -28,7 +28,7 @@ class FilesListFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentFileslistBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -63,8 +63,8 @@ class FilesListFragment : Fragment() {
                 fileSize = file.length(),
                 fileMTTime = file.lastModified()
             )
-        }
-
+        }.sortedByDescending { it.fileMTTime } // sort by file modification time in descending order
+        // 按照文件修改时间从降序排序
     }
 
 
@@ -87,18 +87,41 @@ class FilesListFragment : Fragment() {
         @SuppressLint("NotifyDataSetChanged")
         override fun onEvent(event: Int, path: String?) {
             // If a file is created, modified, or deleted, update the fileList and notify the adapter
-            if (event == FileObserver.CREATE || event == FileObserver.MODIFY || event == FileObserver.DELETE) {
-                fileList = getFileList()
-                fileAdapter.notifyDataSetChanged()
+            if (event == CREATE || event == MODIFY || event == DELETE) {
+                activity?.runOnUiThread { //使用了 activity?.runOnUiThread 方法 确保文件列表和adapter的更新操作在主线程中进行
+                    fileList = getFileList()
+                    fileAdapter.notifyDataSetChanged()
+                }
             }
         }
     }
+
+
+
 
 
     // Stop the FileObserver in onDestroyView()
     override fun onDestroyView() {
         super.onDestroyView()
         fileObserver.stopWatching()
+    }
+
+
+    /**
+     * 重新进入此Fragment需要刷新文件列表
+     * */
+
+    override fun onResume() {
+        super.onResume()
+        refreshFileList()
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private fun refreshFileList() {
+        fileList = getFileList()
+        fileAdapter = FileAdapter(requireContext(), fileList)
+        recycler.adapter = fileAdapter
+        fileAdapter.notifyDataSetChanged()
     }
 
 }
