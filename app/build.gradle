@@ -55,6 +55,9 @@ android {
 
 dependencies {
 
+    // 引入悬浮窗依赖库
+    implementation  'io.github.petterpx:floatingx:1.4.0'
+
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.appcompat:appcompat:1.6.1'
 
