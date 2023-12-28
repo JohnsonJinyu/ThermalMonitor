@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.content.ServiceConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -20,7 +19,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.thermalmonitor.battery.BatteryViewModel
 import com.example.thermalmonitor.databinding.FragmentOverviewBinding
-import com.example.thermalmonitor.floatWindow.FloatWindowService
 import com.example.thermalmonitor.soc.SocViewModel
 import com.example.thermalmonitor.thermal.ThermalViewModel
 
@@ -33,9 +31,7 @@ class OverViewFragment : Fragment(), OpenFolderListener {
 
     private lateinit var viewModel: DataCaptureViewModel
 
-    // 定义一个服务的变量
-    private var serviceConnection: ServiceConnection? = null
-    private var floatWindowService: FloatWindowService? = null
+
 
     @SuppressLint("SetTextI18n")
     @RequiresApi(Build.VERSION_CODES.R)
