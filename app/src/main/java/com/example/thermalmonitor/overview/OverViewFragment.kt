@@ -2,7 +2,6 @@ package com.example.thermalmonitor.overview
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
@@ -10,7 +9,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
-import android.os.IBinder
 import android.os.PowerManager
 import android.provider.Settings
 import android.view.LayoutInflater
@@ -21,7 +19,6 @@ import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.thermalmonitor.battery.BatteryViewModel
-import com.example.thermalmonitor.databinding.FloatWindowBinding
 import com.example.thermalmonitor.databinding.FragmentOverviewBinding
 import com.example.thermalmonitor.floatWindow.FloatWindowService
 import com.example.thermalmonitor.soc.SocViewModel
@@ -154,13 +151,14 @@ class OverViewFragment : Fragment(), OpenFolderListener {
             viewModel.stopDataCapture()
         }
 
-
+        // button 开启悬浮窗
         binding.btnStartFloart.setOnClickListener{
-            floatWindowService?.startFloatWindowService()
+
         }
 
+        // button  关闭悬浮窗
         binding.btnEndFloat.setOnClickListener {
-            floatWindowService?.stopFloatWindowService()
+
         }
 
         return binding.root
@@ -203,38 +201,6 @@ class OverViewFragment : Fragment(), OpenFolderListener {
 
 
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        // 解绑 FloatWindowService
-        unbindFloatWindowService()
-    }
-
-    // 绑定 FloatWindowService 的方法
-    private fun bindFloatWindowService() {
-        serviceConnection = object : ServiceConnection {
-            override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-                // 获取 FloatWindowService 的引用
-                floatWindowService = (service as FloatWindowService.FloatWindowBinder).getService()
-            }
-
-            override fun onServiceDisconnected(name: ComponentName?) {
-                // 释放 FloatWindowService 的引用
-                floatWindowService = null
-            }
-        }
-        // 创建一个 Intent
-        val intent = Intent(requireContext(), FloatWindowService::class.java)
-        // 绑定服务
-        requireActivity().bindService(intent, serviceConnection!!, Context.BIND_AUTO_CREATE)
-    }
-
-    // 解绑 FloatWindowService 的方法
-    private fun unbindFloatWindowService() {
-        // 解绑服务
-        requireActivity().unbindService(serviceConnection!!)
-        // 释放 ServiceConnection 的引用
-        serviceConnection = null
-    }
 
 
 
