@@ -41,13 +41,6 @@ class MainActivity : AppCompatActivity() ,FloatWindowCallback{
 
     private val floatWindowServiceConnection = object : ServiceConnection {
 
-        /*override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            val binder = service as FloatWindowService.FloatWindowBinder
-            floatWindowService = binder.getService()
-            floatWindowServiceConnected = true
-            Log.d("service is connected?","yes")
-        }*/
-
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
             val binder = service as FloatWindowService.FloatWindowBinder
             floatWindowService = binder.getService()

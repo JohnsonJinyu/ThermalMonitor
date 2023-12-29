@@ -40,6 +40,7 @@ class SocAdapter : ListAdapter<DynamicInfo, SocAdapter.ViewHolder>(DiffCallback(
         }
 
         // add this method, only for update frequency data
+        @SuppressLint("SetTextI18n")
         fun updateFrequency(frequency :Int){
             binding.coreFrequency.text = "${frequency}MHz"
         }

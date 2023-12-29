@@ -1,5 +1,6 @@
 package com.example.thermalmonitor.thermal
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.lifecycle.LiveData
@@ -19,6 +20,7 @@ class ThermalAdapter(private val thermalList: LiveData<List<ThermalData>>) :
 
     override fun getItemCount() = thermalList.value?.size ?: 0
 
+    @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         // 用thermalList.value来获取List<Thermal>
         val thermalData = thermalList.value?.get(position) ?: return
