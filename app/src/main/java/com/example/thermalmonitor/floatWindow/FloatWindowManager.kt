@@ -26,6 +26,7 @@ class FloatWindowManager(context: Context) {
         params.format = PixelFormat.TRANSLUCENT  // 设置为半透明
         // 设置为半透明
         floatView.setOpacity(0.8f)
+
         windowManager.addView(floatView, params)
     }
 

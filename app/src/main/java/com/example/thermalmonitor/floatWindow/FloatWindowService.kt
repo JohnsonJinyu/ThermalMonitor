@@ -12,6 +12,7 @@ class FloatWindowService : Service() {
     private lateinit var floatWindowManager: FloatWindowManager
 
     override fun onBind(intent: Intent): IBinder {
+
         return FloatWindowBinder()
     }
 
@@ -24,6 +25,7 @@ class FloatWindowService : Service() {
 
         // 初始化浮动窗口
         floatWindowManager = FloatWindowManager(this)
+
     }
 
     fun show() {
