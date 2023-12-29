@@ -2,45 +2,58 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:background="#80FF7373"
     android:layout_width="200dp"
     android:layout_height="400dp">
 
     <ImageButton
         android:id="@+id/btn_floatWindow_Min"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:contentDescription="最小化或者最大化"
         android:scaleType="fitCenter"
         android:src="@drawable/ic_minimize"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="TouchTargetSize"/>
+
+    <ImageButton
+        android:id="@+id/drag_handle"
+        android:layout_width="80dp"
+        android:layout_height="30dp"
+        app:layout_constraintStart_toEndOf="@+id/btn_floatWindow_Min"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="5dp"
+        android:contentDescription="move bar"
+        tools:ignore="TouchTargetSize"/>
 
     <ImageButton
         android:id="@+id/btn_floatWindow_Start"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_marginEnd="20dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:contentDescription="开始抓取"
         android:scaleType="fitCenter"
         android:src="@drawable/ic_float_start"
         app:layout_constraintEnd_toStartOf="@id/btn_floatWindow_Stop"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="TouchTargetSize"/>
 
     <ImageButton
         android:id="@+id/btn_floatWindow_Stop"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:contentDescription="停止抓取"
-
         android:scaleType="fitCenter"
         android:src="@drawable/ic_float_stop"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="TouchTargetSize" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_float"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:background="@android:color/transparent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
