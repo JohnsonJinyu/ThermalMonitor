@@ -17,6 +17,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.example.thermalmonitor.FloatWindowCallback
 import com.example.thermalmonitor.battery.BatteryViewModel
 import com.example.thermalmonitor.databinding.FragmentOverviewBinding
 import com.example.thermalmonitor.soc.SocViewModel
@@ -31,7 +32,8 @@ class OverViewFragment : Fragment(), OpenFolderListener {
 
     private lateinit var viewModel: DataCaptureViewModel
 
-
+    // 调用接口
+    private var callback: FloatWindowCallback? = null
 
     @SuppressLint("SetTextI18n")
     @RequiresApi(Build.VERSION_CODES.R)
@@ -147,14 +149,15 @@ class OverViewFragment : Fragment(), OpenFolderListener {
             viewModel.stopDataCapture()
         }
 
-        // button 开启悬浮窗
-        binding.btnStartFloart.setOnClickListener{
 
+        // 开启悬浮窗
+        binding.btnStartFloart.setOnClickListener {
+            callback?.showFloatWindow()
         }
 
-        // button  关闭悬浮窗
+        // 关闭悬浮窗
         binding.btnEndFloat.setOnClickListener {
-
+            callback?.hideFloatWindow()
         }
 
         return binding.root
@@ -202,6 +205,19 @@ class OverViewFragment : Fragment(), OpenFolderListener {
 
 
 
+
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        // 保持对 Activity 的引用
+        callback = context as FloatWindowCallback
+    }
+
+    override fun onDetach() {
+        callback = null
+        super.onDetach()
+    }
 
 
 

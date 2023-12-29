@@ -1,7 +1,13 @@
 package com.example.thermalmonitor
 
+import android.annotation.SuppressLint
+import android.content.ComponentName
+import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Build
 import android.os.Bundle
+import android.os.IBinder
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -9,13 +15,14 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.example.thermalmonitor.battery.BatteryFragment
 import com.example.thermalmonitor.filesList.FilesListFragment
+import com.example.thermalmonitor.floatWindow.FloatWindowService
 import com.example.thermalmonitor.overview.OverViewFragment
 import com.example.thermalmonitor.soc.SocFragment
 import com.example.thermalmonitor.thermal.ThermalFragment
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity() ,FloatWindowCallback{
 
     //定义一个SectionsPagerAdapter对象，用来提供Fragment给ViewPager2
     private lateinit var sectionsPagerAdapter: SectionsPagerAdapter
@@ -27,6 +34,37 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tabLayout: TabLayout
 
 
+    // 悬浮窗的服务
+
+    private lateinit var floatWindowService: FloatWindowService
+    private var floatWindowServiceConnected = false
+
+    private val floatWindowServiceConnection = object : ServiceConnection {
+
+        /*override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            val binder = service as FloatWindowService.FloatWindowBinder
+            floatWindowService = binder.getService()
+            floatWindowServiceConnected = true
+            Log.d("service is connected?","yes")
+        }*/
+
+        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            val binder = service as FloatWindowService.FloatWindowBinder
+            floatWindowService = binder.getService()
+            floatWindowServiceConnected = true
+            Log.d("service is connected?", "yes")
+        }
+
+        override fun onServiceDisconnected(arg0: ComponentName) {
+            floatWindowServiceConnected = false
+            Log.d("service is connected?","No")
+
+        }
+
+    }
+
+
+    @SuppressLint("MissingInflatedId")
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,8 +102,17 @@ class MainActivity : AppCompatActivity() {
 
 
 
+        // 绑定浮动窗口服务
+        Intent(this, FloatWindowService::class.java).also { intent ->
+            bindService(intent, floatWindowServiceConnection, BIND_AUTO_CREATE)
+        }
+
+
+
 
     }
+
+
 
 
     class SectionsPagerAdapter(activity: AppCompatActivity) : FragmentStateAdapter(activity) {
@@ -90,6 +137,42 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+    override fun onDestroy() {
+        // 解绑浮动窗口服务
+        unbindService(floatWindowServiceConnection)
+        floatWindowServiceConnected = false
+        super.onDestroy()
+    }
+
+
+
+
+
+    override fun showFloatWindow() {
+        if (floatWindowServiceConnected) {
+            floatWindowService.show()
+        } else {
+            // 如果服务未连接，可以在此处理未连接的情况
+            Log.e("FloatWindowService", "Float window service is not connected")
+        }
+    }
+
+    override fun hideFloatWindow() {
+        if (floatWindowServiceConnected) {
+            floatWindowService.hide()
+        }
+    }
+
+
+}
+
+
+interface FloatWindowCallback {
+
+    fun showFloatWindow()
+
+    fun hideFloatWindow()
 
 }
 
