@@ -151,7 +151,7 @@ class OverViewFragment : Fragment(), OpenFolderListener {
 
 
         // 开启悬浮窗
-        binding.btnStartFloart.setOnClickListener {
+        binding.btnStartFloat.setOnClickListener {
             callback?.showFloatWindow()
         }
 

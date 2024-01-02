@@ -14,10 +14,12 @@ class FloatWindowManager(context: Context) {
     }
 
 
+
+    /**
+     * 悬浮窗的参数设置
+     * */
     fun show() {
-
-        Log.i("show is ok?","yes")
-
+        Log.i("show is ok?", "yes")
         params.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
         params.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                 WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
@@ -29,6 +31,7 @@ class FloatWindowManager(context: Context) {
 
         windowManager.addView(floatView, params)
     }
+
 
     fun hide() {
         if (isShowing()) {
@@ -43,8 +46,6 @@ class FloatWindowManager(context: Context) {
     }
 
     fun isShowing() = floatView.parent != null
-
-
 
 
 }

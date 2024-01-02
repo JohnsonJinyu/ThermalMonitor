@@ -29,7 +29,7 @@ class FloatWindowService : Service() {
     }
 
     fun show() {
-        Log.d("show方法是否被调用","是的")
+        Log.d("show方法是否被调用", "是的")
         if (::floatWindowManager.isInitialized && !floatWindowManager.isShowing()) {
             floatWindowManager.show()
         }

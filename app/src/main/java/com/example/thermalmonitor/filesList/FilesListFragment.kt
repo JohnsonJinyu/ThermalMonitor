@@ -14,8 +14,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.thermalmonitor.databinding.FragmentFileslistBinding
 import java.io.File
 
-
+/**
+ *这个Fragment 是显示本地已经保存的数据的Excel文件，并支持直接跳转到用其他应用打开
+ * */
 class FilesListFragment : Fragment() {
+
 
     // 创建视图绑定
     private lateinit var binding: FragmentFileslistBinding
@@ -82,7 +85,6 @@ class FilesListFragment : Fragment() {
     }
 
 
-
     // Define a FileObserver to monitor the folder changes
     private val observer = object : ContentObserver(null) {
 
@@ -91,10 +93,6 @@ class FilesListFragment : Fragment() {
         }
 
     }
-
-
-
-
 
 
     // Stop the FileObserver in onDestroyView()
