@@ -25,8 +25,8 @@ class FloatWindowView(context: Context, attrs: AttributeSet? = null) : FrameLayo
     private val iconMinimize = R.drawable.ic_minimize
     private val iconMaximize = R.drawable.ic_maximize
 
-   // 声明并实例化floatViewModel，并传递参数
-    private val floatViewModel = FloatViewModel()
+    // 使用 ViewModelProvider 获取 FloatViewModel的实例
+
 
 
     // 初始化
@@ -44,10 +44,6 @@ class FloatWindowView(context: Context, attrs: AttributeSet? = null) : FrameLayo
         val adapter = FloatAdapter()
         recyclerView.adapter = adapter
 
-        // 观察FloatViewModel中的LiveData数据，然后更新适配器中的数据
-        FloatViewModel.floatData.observeForever {
-            adapter.updateData(it)
-        }
 
 
         // 设置拖动按钮的点击事件
