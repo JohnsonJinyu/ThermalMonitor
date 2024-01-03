@@ -1,6 +1,7 @@
 package com.example.thermalmonitor.thermal
 
 
+import android.app.Application
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -17,7 +18,7 @@ import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
-class ThermalViewModel: ViewModel() {
+class ThermalViewModel(application: Application) : ViewModel() {
 
     private val _thermalList = MutableLiveData<List<ThermalData>> () //使用LiveData存储和更新数据，方便通知与观察
     val thermalList  :LiveData<List<ThermalData>>

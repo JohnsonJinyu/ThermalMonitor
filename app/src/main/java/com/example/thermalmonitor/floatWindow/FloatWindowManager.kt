@@ -14,7 +14,6 @@ class FloatWindowManager(context: Context) {
     }
 
 
-
     /**
      * 悬浮窗的参数设置
      * */
