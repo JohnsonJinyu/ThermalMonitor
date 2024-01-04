@@ -25,7 +25,9 @@ class FloatWindowView(context: Context, attrs: AttributeSet? = null) : FrameLayo
     private val iconMinimize = R.drawable.ic_minimize
     private val iconMaximize = R.drawable.ic_maximize
 
-    // 使用 ViewModelProvider 获取 FloatViewModel的实例
+    private val adapter = FloatAdapter()
+    
+
 
 
 
@@ -41,8 +43,9 @@ class FloatWindowView(context: Context, attrs: AttributeSet? = null) : FrameLayo
         recyclerView.layoutManager = LinearLayoutManager(context)
 
         // 将这个recyclerView绑定到FloatAdapter适配器
-        val adapter = FloatAdapter()
+
         recyclerView.adapter = adapter
+
 
 
 
@@ -81,6 +84,15 @@ class FloatWindowView(context: Context, attrs: AttributeSet? = null) : FrameLayo
             updateSize()
         }
     }
+
+
+    // 添加一个方法来更新数据
+    fun updateData(data: List<FloatDataItem>) {
+        adapter.updateData(data)
+    }
+
+
+
 
     // 设置视图的布局参数
     fun setLayoutParams(params: WindowManager.LayoutParams) {

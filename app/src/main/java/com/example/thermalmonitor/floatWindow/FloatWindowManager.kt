@@ -9,7 +9,7 @@ class FloatWindowManager(context: Context) {
 
     private val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     private val params = WindowManager.LayoutParams()
-    private val floatView = FloatWindowView(context).apply {
+    val floatView = FloatWindowView(context).apply {
         setLayoutParams(params)
     }
 

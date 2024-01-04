@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
+import com.example.thermalmonitor.dataRepository.ThermalDataManager
 import com.example.thermalmonitor.databinding.FragmentThermalBinding
 
 class ThermalFragment : Fragment() {
@@ -25,7 +26,9 @@ class ThermalFragment : Fragment() {
         //设置RecyclerView的布局管理器和适配器，根据屏幕方向显示不同数量的列
         binding.recyclerViewThermal.layoutManager =
             GridLayoutManager(context,if(resources.configuration.orientation == 1) 2 else 4)
-        binding.recyclerViewThermal.adapter = ThermalAdapter(viewModel.thermalList)
+        //初始化适配器时可以传递一个空列表或者初始列表。
+        binding.recyclerViewThermal.adapter = ThermalAdapter(emptyList())
+
         return binding.root
 
     }
@@ -33,9 +36,10 @@ class ThermalFragment : Fragment() {
     @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        //观察ViewModel中的数据变化，当数据更新时通知适配器刷新界面
-        viewModel.thermalList.observe(viewLifecycleOwner){
-            (binding.recyclerViewThermal.adapter as ThermalAdapter).notifyDataSetChanged()
+        //// 观察 ThermalDataManager 中的数据变化，当数据更新时通知适配器刷新界面
+        ThermalDataManager.thermalList.observe(viewLifecycleOwner) { thermalDataList ->
+            // 当数据更新时，更新适配器的数据
+            (binding.recyclerViewThermal.adapter as ThermalAdapter).submitList(thermalDataList)
         }
         //添加一个OnLayoutChangeListener，当视图的布局发生变化时，重新设置RecyclerView的列数
         binding.recyclerViewThermal.addOnLayoutChangeListener{
