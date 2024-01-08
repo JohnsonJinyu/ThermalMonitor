@@ -91,7 +91,7 @@ class FloatWindowView(context: Context, attrs: AttributeSet? = null) : FrameLayo
     // 悬浮窗缩放大小调整
     private fun updateSize() {
         layoutParams?.let { params ->
-            params.height = if (isMinimized) dpToPx(40) else dpToPx(400)
+            params.height = if (isMinimized) dpToPx(30) else dpToPx(320)
             windowManager.updateViewLayout(this, params)
         }
     }
