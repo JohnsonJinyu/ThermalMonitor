@@ -29,6 +29,8 @@ class FloatWindowManager(context: Context) {
         floatView.setOpacity(0.8f)
 
         windowManager.addView(floatView, params)
+
+
     }
 
 

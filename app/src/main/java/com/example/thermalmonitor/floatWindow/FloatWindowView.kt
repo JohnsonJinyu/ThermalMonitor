@@ -12,6 +12,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.thermalmonitor.R
 
+/**
+ * 悬浮窗视图管理类
+ * */
 @SuppressLint("ClickableViewAccessibility", "MissingInflatedId")
 class FloatWindowView(context: Context, attrs: AttributeSet? = null) : FrameLayout(context, attrs) {
 
@@ -19,16 +22,15 @@ class FloatWindowView(context: Context, attrs: AttributeSet? = null) : FrameLayo
     private var layoutParams: WindowManager.LayoutParams? = null
     private var lastX: Float = 0f
     private var lastY: Float = 0f
+
     // 定义一个变量表示悬浮窗的缩放状态
     private var isMinimized: Boolean = false
+
     // 定义两个变量表示悬浮窗缩小和方法的图标
     private val iconMinimize = R.drawable.ic_minimize
     private val iconMaximize = R.drawable.ic_maximize
 
-
-    
-
-
+    public val adapter = FloatAdapter(emptyList())
 
 
     // 初始化
@@ -41,11 +43,7 @@ class FloatWindowView(context: Context, attrs: AttributeSet? = null) : FrameLayo
         // 获取悬浮窗中的recyclerview，并设置布局管理器
         val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView_float)
         recyclerView.layoutManager = LinearLayoutManager(context)
-
-
-
-
-
+        recyclerView.adapter = adapter
 
         // 设置拖动按钮的点击事件
         dragHandle.setOnTouchListener { _, event ->
@@ -82,10 +80,6 @@ class FloatWindowView(context: Context, attrs: AttributeSet? = null) : FrameLayo
             updateSize()
         }
     }
-
-
-
-
 
 
     // 设置视图的布局参数

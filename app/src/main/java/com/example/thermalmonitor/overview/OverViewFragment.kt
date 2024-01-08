@@ -150,6 +150,10 @@ class OverViewFragment : Fragment(), OpenFolderListener {
         }
 
 
+        /**
+         * 悬浮窗开启与关闭按钮点击事件
+         * */
+
         // 开启悬浮窗
         binding.btnStartFloat.setOnClickListener {
             callback?.showFloatWindow()
@@ -206,7 +210,11 @@ class OverViewFragment : Fragment(), OpenFolderListener {
 
 
 
-
+    /**
+     * onAttach() 方法会在 Fragment 被添加到 FragmentManager 并附加到其宿主 Activity 时调用。
+     * 这时，您可以获取 Activity 的引用，并将其转换为 FloatWindowCallback 类型，
+     * 以便在 Fragment 中调用显示或隐藏悬浮窗口的方法。
+     * */
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
@@ -214,6 +222,10 @@ class OverViewFragment : Fragment(), OpenFolderListener {
         callback = context as FloatWindowCallback
     }
 
+    /**
+     * onDetach() 方法会在 Fragment 从 FragmentManager 中移除并与其宿主 Activity 分离时调用。
+     * 这时，您可以将 Activity 的引用置为 null，以避免内存泄漏或其他问题。
+     * */
     override fun onDetach() {
         callback = null
         super.onDetach()
@@ -224,7 +236,7 @@ class OverViewFragment : Fragment(), OpenFolderListener {
 
 
     /**
-     * part of request permissions
+     * 权限申请部分
      * */
 
     private fun checkAndRequestPermissions() {

@@ -7,7 +7,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.thermalmonitor.R
 
-class FloatAdapter(private val dataList: List<FloatDataItem>) : RecyclerView.Adapter<FloatAdapter.MyViewHolder>() {
+class FloatAdapter(var dataList: List<FloatDataItem>) : RecyclerView.Adapter<FloatAdapter.MyViewHolder>() {
 
 
     class MyViewHolder(val view: View) : RecyclerView.ViewHolder(view){
@@ -47,5 +47,9 @@ class FloatAdapter(private val dataList: List<FloatDataItem>) : RecyclerView.Ada
     }
 
 
+    fun updateData(newData: List<FloatDataItem>) {
+        this.dataList = newData
+        notifyDataSetChanged()
+    }
 
 }

@@ -34,7 +34,9 @@ class MainActivity : AppCompatActivity() ,FloatWindowCallback{
     private lateinit var tabLayout: TabLayout
 
 
-    // 悬浮窗的服务
+    /**
+     * 悬浮窗服务
+     * */
 
     private lateinit var floatWindowService: FloatWindowService
     private var floatWindowServiceConnected = false

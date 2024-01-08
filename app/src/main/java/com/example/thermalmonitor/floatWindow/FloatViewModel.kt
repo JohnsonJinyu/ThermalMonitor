@@ -19,11 +19,16 @@ class FloatViewModel(application: Application) : AndroidViewModel(application) {
         get() = _floatData
 
 
+
+
+
     // 使用ViewModelProvider来获取ViewModel实例
     private val batteryViewModel: BatteryViewModel by lazy {
         ViewModelProvider.AndroidViewModelFactory.getInstance(application)
             .create(BatteryViewModel::class.java)
     }
+
+
 
     // 假设ThermalViewModel和SocViewModel也是AndroidViewModel的子类
     private val thermalViewModel: ThermalViewModel by lazy {
@@ -40,18 +45,35 @@ class FloatViewModel(application: Application) : AndroidViewModel(application) {
     private val batteryDataList = mutableListOf<FloatDataItem>()
 
 
+    fun startObserving() {
+        // 启动观察其他ViewModel
+        startObservingBatteryData()
+    }
 
+    fun stopObserving() {
+        // 停止观察
+        stopObservingBatteryData()
+    }
+
+
+
+
+
+
+    /**
+     * 对电池数据的观察与处理
+     * */
     // 暂存观察者引用，以便可以移除
     private val batteryDataObserver = Observer<BatteryData> { batteryData ->
         handleBatteryData(batteryData)
     }
 
     // 启动电池数据的观察者
-    fun startObservingBatteryData() {
+    private fun startObservingBatteryData() {
         batteryViewModel.batteryData.observeForever(batteryDataObserver)
     }
     // 停止电池数据的观察者
-    fun stopObservingBatteryData() {
+    private fun stopObservingBatteryData() {
         batteryViewModel.batteryData.removeObserver(batteryDataObserver)
     }
 
@@ -67,6 +89,9 @@ class FloatViewModel(application: Application) : AndroidViewModel(application) {
         // 假设我们只关心电池数据
         _floatData.value = batteryDataItems
     }
+
+
+
 
 
 
