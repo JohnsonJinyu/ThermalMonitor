@@ -47,6 +47,24 @@ class ThermalFragment : Fragment() {
             val layoutManager = binding.recyclerViewThermal.layoutManager as GridLayoutManager
             layoutManager.spanCount = if (resources.configuration.orientation == 1) 2 else 4
         }
+
+        // 为全选按钮添加点击事件监听器，当用户点击全选按钮时，遍历列表，
+        // 更新每个Item的`isChecked`的值，并通知适配器数据发生了变化：
+        binding.chbThermalSelectAll.setOnClickListener {
+            val isChecked = binding.chbThermalSelectAll.isChecked
+            val adapter = binding.recyclerViewThermal.adapter as ThermalAdapter
+
+            binding.recyclerViewThermal.post{
+                adapter.selectAll(isChecked)
+
+            }
+        }
+
+    }
+
+    private fun updateFloatingWindow() {
+        val selectedItems = (binding.recyclerViewThermal.adapter as ThermalAdapter).getSelectedItems()
+        // 将selectedItems传递给悬浮窗的ViewModel
     }
 
 }

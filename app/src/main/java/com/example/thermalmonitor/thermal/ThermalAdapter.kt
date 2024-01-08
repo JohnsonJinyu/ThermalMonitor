@@ -21,21 +21,41 @@ class ThermalAdapter(private var thermalList: List<ThermalData>) :
 
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        // 用thermalList.value来获取List<Thermal>
         val thermalData = thermalList[position]
-        // 使用viewBinding绑定数据到视图元素，只更新temp值，避免整体重绘
         holder.binding.apply {
             thermalZone.text = thermalData.zone
             thermalType.text = thermalData.type
             thermalTemp.text = "${thermalData.temp}℃"
+            thermalCheckbox.setOnCheckedChangeListener(null) // 清除之前的监听器，防止无限循环
+            thermalCheckbox.isChecked = thermalData.isChecked
+            thermalCheckbox.setOnCheckedChangeListener { _, isChecked ->
+                thermalData.isChecked = isChecked
+            }
         }
     }
+
+
 
 
     @SuppressLint("NotifyDataSetChanged")
     fun submitList(newList: List<ThermalData>) {
         thermalList = newList
         notifyDataSetChanged()
+    }
+
+
+
+
+    // 用于更新所有item中checkbox的值的方法
+    @SuppressLint("NotifyDataSetChanged")
+    fun selectAll(isChecked: Boolean) {
+        thermalList.forEach { it.isChecked = isChecked }
+        notifyDataSetChanged()
+    }
+
+    // 在ThermalAdapter中添加一个getSelectedItems的方法，用来找出所有被选中的Item：
+    fun getSelectedItems(): List<ThermalData> {
+        return thermalList.filter { it.isChecked }
     }
 
 }

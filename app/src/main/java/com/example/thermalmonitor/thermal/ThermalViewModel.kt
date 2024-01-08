@@ -51,6 +51,8 @@ class ThermalViewModel: ViewModel() {
                         list.add(ThermalData(zone,type,"%.2f".format(temp.toInt()/1000.0))) //使用字符串模板和双精度浮点数来格式化温度值
                     }
                 }
+                // 调用这个方法 使得checkbox的状态维持旧的状态
+                updateThermalList(list)
                 //在主线程更新LiveData的值，通知观察者数据变化
                 withContext(Dispatchers.Main){
                     _thermalList.value = list //使用value属性而不是postValue方法来更新LiveData的值
@@ -83,6 +85,18 @@ class ThermalViewModel: ViewModel() {
             e.printStackTrace()
             ""
         }
+    }
+
+    // 添加一个方法，主要是为了让checkbox的状态维持旧的状态
+    private fun updateThermalList(newList: List<ThermalData>) {
+        val oldList = _thermalList.value ?: emptyList()
+        for (oldItem in oldList) {
+            val newItem = newList.find { it.zone == oldItem.zone && it.type == oldItem.type }
+            if (newItem != null) {
+                newItem.isChecked = oldItem.isChecked
+            }
+        }
+        _thermalList.postValue(newList)
     }
 
 }
