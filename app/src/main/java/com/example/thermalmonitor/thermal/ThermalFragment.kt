@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
-import com.example.thermalmonitor.dataRepository.ThermalDataManager
 import com.example.thermalmonitor.databinding.FragmentThermalBinding
 
 class ThermalFragment : Fragment() {
@@ -37,7 +36,7 @@ class ThermalFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         //// 观察 ThermalDataManager 中的数据变化，当数据更新时通知适配器刷新界面
-        ThermalDataManager.thermalList.observe(viewLifecycleOwner) { thermalDataList ->
+        viewModel.thermalList.observe(viewLifecycleOwner) { thermalDataList ->
             // 当数据更新时，更新适配器的数据
             (binding.recyclerViewThermal.adapter as ThermalAdapter).submitList(thermalDataList)
         }
