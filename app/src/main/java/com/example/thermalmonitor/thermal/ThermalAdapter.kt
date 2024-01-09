@@ -7,8 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.thermalmonitor.databinding.ItemThermalBinding
 
 
-class ThermalAdapter(private var thermalList: List<ThermalData>,
-                     private val onItemCheckChanged: (ThermalData, Boolean) -> Unit) :
+class ThermalAdapter(private var thermalList: List<ThermalData>, private val listener: OnItemCheckedChangedListener) :
     RecyclerView.Adapter<ThermalAdapter.ViewHolder>() {
 
     class ViewHolder(val binding: ItemThermalBinding) : RecyclerView.ViewHolder(binding.root)
@@ -27,10 +26,14 @@ class ThermalAdapter(private var thermalList: List<ThermalData>,
             thermalZone.text = thermalData.zone
             thermalType.text = thermalData.type
             thermalTemp.text = "${thermalData.temp}℃"
-            thermalCheckbox.setOnCheckedChangeListener(null)
+            thermalCheckbox.setOnCheckedChangeListener(null) // 清除之前的监听器，防止无限循环
             thermalCheckbox.isChecked = thermalData.isChecked
             thermalCheckbox.setOnCheckedChangeListener { _, isChecked ->
-                onItemCheckChanged(thermalData, isChecked)
+                thermalData.isChecked = isChecked
+                //listener?.onItemCheckedChanged(thermalData.zone, thermalData.isChecked)
+                // 更新 _thermalList
+                // 不直接修改thermalData的isChecked属性，而是通过调用updateItem方法来修改isCheckedMap中的值
+                listener?.onItemCheckedChanged(thermalData.zone, isChecked)
             }
         }
     }
@@ -42,21 +45,30 @@ class ThermalAdapter(private var thermalList: List<ThermalData>,
     fun submitList(newList: List<ThermalData>) {
         thermalList = newList
         notifyDataSetChanged()
+        // Log 打印thermalList
+        //Log.d("ThermalAdapter", "submitList: $thermalList")
+        // 打印确认，这里的thermalList中的数据的isChecked属性是能够被UI 修改更新的
     }
 
 
 
 
-    // 用于更新所有item中checkbox的值的方法
+    // 用于全选点击事件后更新isChecked属性
     @SuppressLint("NotifyDataSetChanged")
     fun selectAll(isChecked: Boolean) {
-        thermalList.forEach { it.isChecked = isChecked }
+        thermalList.forEach {
+            it.isChecked = isChecked
+            listener?.onItemCheckedChanged(it.zone, isChecked)
+        }
         notifyDataSetChanged()
     }
 
-    // 在ThermalAdapter中添加一个getSelectedItems的方法，用来找出所有被选中的Item：
-    fun getSelectedItems(): List<ThermalData> {
-        return thermalList.filter { it.isChecked }
+
+
+    // 定义一个接口
+    interface OnItemCheckedChangedListener {
+        fun onItemCheckedChanged(zone: String, isChecked: Boolean)
     }
+
 
 }

@@ -25,10 +25,15 @@ class ThermalFragment : Fragment() {
         //设置RecyclerView的布局管理器和适配器，根据屏幕方向显示不同数量的列
         binding.recyclerViewThermal.layoutManager =
             GridLayoutManager(context,if(resources.configuration.orientation == 1) 2 else 4)
-        //初始化适配器时可以传递一个空列表或者初始列表。
-        //使用了 viewModel::updateCheckedStatus 作为一个方法引用，它将被传递到 ThermalAdapter 的构造函数中，并在 checkbox 状态改变时被调用
-        binding.recyclerViewThermal.adapter = ThermalAdapter(emptyList(), viewModel::updateCheckedStatus)
-
+        // 创建ThermalAdapter的实例时，你可以传入一个OnItemCheckedChangedListener实例
+        // 用于监听列表中的Item的选中状态发生变化的事件
+        binding.recyclerViewThermal.adapter = ThermalAdapter(viewModel.thermalList.value ?: emptyList(),object :
+            ThermalAdapter.OnItemCheckedChangedListener {
+            override fun onItemCheckedChanged(zone: String, isChecked: Boolean) {
+                // 当列表中的Item的选中状态发生变化时，更新ThermalViewModel中的数据
+                viewModel.updateItem(zone, isChecked)
+            }
+        })
 
 
         return binding.root
@@ -43,6 +48,7 @@ class ThermalFragment : Fragment() {
             // 当数据更新时，更新适配器的数据
             (binding.recyclerViewThermal.adapter as ThermalAdapter).submitList(thermalDataList)
         }
+
         //添加一个OnLayoutChangeListener，当视图的布局发生变化时，重新设置RecyclerView的列数
         binding.recyclerViewThermal.addOnLayoutChangeListener{
             _,_,_,_,_,_,_,_,_ ->
@@ -65,9 +71,5 @@ class ThermalFragment : Fragment() {
 
     }
 
-    private fun updateFloatingWindow() {
-        val selectedItems = (binding.recyclerViewThermal.adapter as ThermalAdapter).getSelectedItems()
-        // 将selectedItems传递给悬浮窗的ViewModel
-    }
 
 }

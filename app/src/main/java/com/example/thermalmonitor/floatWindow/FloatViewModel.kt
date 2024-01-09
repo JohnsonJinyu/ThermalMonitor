@@ -21,15 +21,11 @@ class FloatViewModel(application: Application) : AndroidViewModel(application) {
         get() = _floatData
 
 
-
-
-
     // 使用ViewModelProvider来获取ViewModel实例
     private val batteryViewModel: BatteryViewModel by lazy {
         ViewModelProvider.AndroidViewModelFactory.getInstance(application)
             .create(BatteryViewModel::class.java)
     }
-
 
 
     // 假设ThermalViewModel和SocViewModel也是AndroidViewModel的子类
@@ -49,6 +45,10 @@ class FloatViewModel(application: Application) : AndroidViewModel(application) {
 
 
 
+    /**
+     * 控制启动和停止观察外部liveData
+     * */
+
     fun startObserving() {
         // 启动观察其他ViewModel
         startObservingBatteryData()
@@ -62,25 +62,24 @@ class FloatViewModel(application: Application) : AndroidViewModel(application) {
     }
 
 
-
-
-
-
     /**
      * 对电池数据的观察与处理
      * */
-    // 暂存观察者引用，以便可以移除
-    private val batteryDataObserver = Observer<BatteryData> { batteryData ->
-        handleBatteryData(batteryData)
-    }
+
 
     // 启动电池数据的观察者
     private fun startObservingBatteryData() {
         batteryViewModel.batteryData.observeForever(batteryDataObserver)
     }
+
     // 停止电池数据的观察者
     private fun stopObservingBatteryData() {
         batteryViewModel.batteryData.removeObserver(batteryDataObserver)
+    }
+    // 暂存观察者引用，以便可以移除
+    private val batteryDataObserver = Observer<BatteryData> { _ ->
+        //handleBatteryData(batteryData)
+        updateFloatData()
     }
 
     // 一个方法，用于处理电池数据
@@ -140,6 +139,66 @@ class FloatViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun stopObservingThermalData() {
         thermalViewModel.thermalList.removeObserver(thermalDataObserver)
+    }
+
+    /**
+     * 对thermal数据的观察与处理
+     * */
+
+    // 暂存观察者引用，以便可以移除
+    private val thermalDataObserver = Observer<List<ThermalData>> { _ ->
+        //handleThermalData(thermalDataList)
+        updateFloatData()
+    }
+
+    private fun handleThermalData(thermalDataList: List<ThermalData>) {
+        // 收集被选中的 ThermalData
+        val checkedThermalData = thermalDataList.filter { it.isChecked }
+
+        // 将它们转换为 FloatDataItem
+        val thermalDataItems = checkedThermalData.map {
+            FloatDataItem(it.type, "${it.temp}℃")
+        }
+
+        // 更新 _floatData
+        _floatData.value = thermalDataItems
+    }
+
+    // 启动thermal数据的观察者
+    private fun startObservingThermalData() {
+        thermalViewModel.thermalList.observeForever(thermalDataObserver)
+    }
+
+    // 停止thermal数据的观察者
+    private fun stopObservingThermalData() {
+        thermalViewModel.thermalList.removeObserver(thermalDataObserver)
+    }
+
+
+    private fun updateFloatData() {
+        // 获取电池数据
+        val batteryData = batteryViewModel.batteryData.value
+        val batteryDataItems = if (batteryData != null) {
+            listOf(
+                FloatDataItem("Battery Level", "${batteryData.level}%"),
+                FloatDataItem("Battery Status", batteryData.status),
+                FloatDataItem("Battery Current", "${batteryData.current}mA"),
+                FloatDataItem("Battery Voltage", "${batteryData.voltage}V")
+            )
+        } else {
+            emptyList()
+        }
+
+        // 获取被选中的 thermal 数据
+        val checkedThermalData = thermalViewModel.thermalList.value?.filter { it.isChecked }
+        val thermalDataItems = checkedThermalData?.map {
+            FloatDataItem(it.type, "${it.temp}℃")
+        } ?: emptyList()
+
+        // 更新 _floatData
+        _floatData.value = batteryDataItems + thermalDataItems
+        // Log打印thermalDataItems
+        Log.d("thermalDataItems", "thermalDataItems: $thermalDataItems")
     }
 
 
