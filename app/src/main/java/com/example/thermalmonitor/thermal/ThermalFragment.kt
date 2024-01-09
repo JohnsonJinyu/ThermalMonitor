@@ -26,7 +26,10 @@ class ThermalFragment : Fragment() {
         binding.recyclerViewThermal.layoutManager =
             GridLayoutManager(context,if(resources.configuration.orientation == 1) 2 else 4)
         //初始化适配器时可以传递一个空列表或者初始列表。
-        binding.recyclerViewThermal.adapter = ThermalAdapter(emptyList())
+        //使用了 viewModel::updateCheckedStatus 作为一个方法引用，它将被传递到 ThermalAdapter 的构造函数中，并在 checkbox 状态改变时被调用
+        binding.recyclerViewThermal.adapter = ThermalAdapter(emptyList(), viewModel::updateCheckedStatus)
+
+
 
         return binding.root
 

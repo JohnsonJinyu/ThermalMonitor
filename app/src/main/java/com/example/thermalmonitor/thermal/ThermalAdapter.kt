@@ -7,7 +7,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.thermalmonitor.databinding.ItemThermalBinding
 
 
-class ThermalAdapter(private var thermalList: List<ThermalData>) :
+class ThermalAdapter(private var thermalList: List<ThermalData>,
+                     private val onItemCheckChanged: (ThermalData, Boolean) -> Unit) :
     RecyclerView.Adapter<ThermalAdapter.ViewHolder>() {
 
     class ViewHolder(val binding: ItemThermalBinding) : RecyclerView.ViewHolder(binding.root)
@@ -26,10 +27,10 @@ class ThermalAdapter(private var thermalList: List<ThermalData>) :
             thermalZone.text = thermalData.zone
             thermalType.text = thermalData.type
             thermalTemp.text = "${thermalData.temp}℃"
-            thermalCheckbox.setOnCheckedChangeListener(null) // 清除之前的监听器，防止无限循环
+            thermalCheckbox.setOnCheckedChangeListener(null)
             thermalCheckbox.isChecked = thermalData.isChecked
             thermalCheckbox.setOnCheckedChangeListener { _, isChecked ->
-                thermalData.isChecked = isChecked
+                onItemCheckChanged(thermalData, isChecked)
             }
         }
     }

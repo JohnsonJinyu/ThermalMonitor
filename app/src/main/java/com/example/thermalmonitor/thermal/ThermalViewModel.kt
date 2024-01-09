@@ -88,16 +88,28 @@ class ThermalViewModel: ViewModel() {
     }
 
     // 添加一个方法，主要是为了让checkbox的状态维持旧的状态
-    private fun updateThermalList(newList: List<ThermalData>) {
+    private fun updateThermalList(newList: MutableList<ThermalData>) {
         val oldList = _thermalList.value ?: emptyList()
-        for (oldItem in oldList) {
-            val newItem = newList.find { it.zone == oldItem.zone && it.type == oldItem.type }
-            if (newItem != null) {
+        for (newItem in newList) {
+            val oldItem = oldList.find { it.zone == newItem.zone && it.type == newItem.type }
+            if (oldItem != null) {
                 newItem.isChecked = oldItem.isChecked
             }
         }
-        _thermalList.postValue(newList)
     }
+
+
+    fun updateCheckedStatus(updatedThermalData: ThermalData, isChecked: Boolean) {
+        _thermalList.value = _thermalList.value?.map { thermalData ->
+            if (thermalData.zone == updatedThermalData.zone && thermalData.type == updatedThermalData.type) {
+                thermalData.copy(isChecked = isChecked)
+            } else {
+                thermalData
+            }
+        }
+    }
+
+
 
 }
 

@@ -1,6 +1,7 @@
 package com.example.thermalmonitor.floatWindow
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -9,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.thermalmonitor.battery.BatteryData
 import com.example.thermalmonitor.battery.BatteryViewModel
 import com.example.thermalmonitor.soc.SocViewModel
+import com.example.thermalmonitor.thermal.ThermalData
 import com.example.thermalmonitor.thermal.ThermalViewModel
 
 class FloatViewModel(application: Application) : AndroidViewModel(application) {
@@ -43,16 +45,20 @@ class FloatViewModel(application: Application) : AndroidViewModel(application) {
 
     // 定义一个中间列表，分别用于存储battery、thermal、soc的数据
     private val batteryDataList = mutableListOf<FloatDataItem>()
+    private val thermalDataList = mutableListOf<FloatDataItem>()
+
 
 
     fun startObserving() {
         // 启动观察其他ViewModel
         startObservingBatteryData()
+        startObservingThermalData()
     }
 
     fun stopObserving() {
         // 停止观察
         stopObservingBatteryData()
+        stopObservingThermalData()
     }
 
 
@@ -86,13 +92,55 @@ class FloatViewModel(application: Application) : AndroidViewModel(application) {
             FloatDataItem("Battery Current", "${batteryData.current}mA"),
             FloatDataItem("Battery Voltage", "${batteryData.voltage}V")
         )
-        // 假设我们只关心电池数据
-        _floatData.value = batteryDataItems
+        // 更新batteryDataList
+        this.batteryDataList.clear()
+        this.batteryDataList.addAll(batteryDataItems)
+        // 更新_floatData
+        _floatData.value = batteryDataList + this.thermalDataList
+
     }
 
 
+    /**
+     * Thermal部分数据的观察与处理
+     * */
+
+    private val thermalDataObserver = Observer<List<ThermalData>> { thermalDataList ->
+        handleThermalData(thermalDataList)
+    }
+
+    private fun handleThermalData(thermalDataList: List<ThermalData>) {
+        // 这里处理thermal数据，并更新_floatData
+        val thermalDataItems = thermalDataList
+            .filter { it.isChecked }
+            .map {
+                FloatDataItem(
+                    itemName = it.type,
+                    itemValue = it.temp
+
+                )
+
+            }
 
 
+        this.thermalDataList.clear()
+        this.thermalDataList.addAll(thermalDataItems)
+
+        // 假设我们关心电池数据和thermal数据
+        _floatData.value = batteryDataList + this.thermalDataList
+        // Log打印一下thermalDataList
+        Log.d("thermalDataList", "handleThermalData: $thermalDataList")
+
+    }
+
+
+    private fun startObservingThermalData() {
+        thermalViewModel.thermalList.observeForever(thermalDataObserver)
+    }
+
+    private fun stopObservingThermalData() {
+        thermalViewModel.thermalList.removeObserver(thermalDataObserver)
+    }
 
 
 }
