@@ -18,10 +18,10 @@ import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.thermalmonitor.FloatWindowCallback
+import com.example.thermalmonitor.MyApp
 import com.example.thermalmonitor.battery.BatteryViewModel
 import com.example.thermalmonitor.databinding.FragmentOverviewBinding
 import com.example.thermalmonitor.soc.SocViewModel
-import com.example.thermalmonitor.thermal.ThermalViewModel
 
 
 class OverViewFragment : Fragment(), OpenFolderListener {
@@ -56,7 +56,11 @@ class OverViewFragment : Fragment(), OpenFolderListener {
          * */
         // 在 OverViewFragment 中使用 ViewModelProvider 和 ViewModelFactory 创建 DataCaptureViewModel 实例
         val batteryViewModel = ViewModelProvider(this)[BatteryViewModel::class.java]
-        val thermalViewModel = ViewModelProvider(this)[ThermalViewModel::class.java]
+
+        // 将创建新的thermalViewModel实例改为获取已创建的实例
+        val thermalViewModel = (activity?.application as MyApp).getThermalViewModel()
+        //val thermalViewModel = ViewModelProvider(this)[ThermalViewModel::class.java]
+
         val socViewModel = ViewModelProvider(this)[SocViewModel::class.java]
         val dataProcessor = DataProcessToSave(thermalViewModel, socViewModel)
 

@@ -6,8 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
+import com.example.thermalmonitor.MyApp
 import com.example.thermalmonitor.databinding.FragmentThermalBinding
 
 class ThermalFragment : Fragment() {
@@ -21,7 +21,10 @@ class ThermalFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentThermalBinding.inflate(inflater,container,false)
-        viewModel = ViewModelProvider(this)[ThermalViewModel::class.java]
+
+        //viewModel = ViewModelProvider(this)[ThermalViewModel::class.java]
+        viewModel = (activity?.application as MyApp).getThermalViewModel()
+
         //设置RecyclerView的布局管理器和适配器，根据屏幕方向显示不同数量的列
         binding.recyclerViewThermal.layoutManager =
             GridLayoutManager(context,if(resources.configuration.orientation == 1) 2 else 4)
