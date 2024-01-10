@@ -57,9 +57,9 @@ class OverViewFragment : Fragment(), OpenFolderListener {
         // 在 OverViewFragment 中使用 ViewModelProvider 和 ViewModelFactory 创建 DataCaptureViewModel 实例
         val batteryViewModel = ViewModelProvider(this)[BatteryViewModel::class.java]
 
-        // 将创建新的thermalViewModel实例改为获取已创建的实例
+        // 将创建新的thermalViewModel实例改为使用getThermalViewModel方法获取已创建的实例
         val thermalViewModel = (activity?.application as MyApp).getThermalViewModel()
-        //val thermalViewModel = ViewModelProvider(this)[ThermalViewModel::class.java]
+
 
         val socViewModel = ViewModelProvider(this)[SocViewModel::class.java]
         val dataProcessor = DataProcessToSave(thermalViewModel, socViewModel)

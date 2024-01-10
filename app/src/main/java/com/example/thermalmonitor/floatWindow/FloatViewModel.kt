@@ -7,11 +7,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import com.example.thermalmonitor.MyApp
 import com.example.thermalmonitor.battery.BatteryData
 import com.example.thermalmonitor.battery.BatteryViewModel
 import com.example.thermalmonitor.soc.SocViewModel
 import com.example.thermalmonitor.thermal.ThermalData
-import com.example.thermalmonitor.thermal.ThermalViewModel
 
 class FloatViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -28,11 +28,16 @@ class FloatViewModel(application: Application) : AndroidViewModel(application) {
     }
 
 
+
+    // 使用MyApp中的getThermalViewModel方法来获取ThermalViewModel的实例
     // 假设ThermalViewModel和SocViewModel也是AndroidViewModel的子类
-    private val thermalViewModel: ThermalViewModel by lazy {
+    /*private val thermalViewModel: ThermalViewModel by lazy {
         ViewModelProvider.AndroidViewModelFactory.getInstance(application)
             .create(ThermalViewModel::class.java)
-    }
+    }*/
+    private val thermalViewModel = (application as MyApp).getThermalViewModel()
+
+
     private val socViewModel: SocViewModel by lazy {
         ViewModelProvider.AndroidViewModelFactory.getInstance(application)
             .create(SocViewModel::class.java)

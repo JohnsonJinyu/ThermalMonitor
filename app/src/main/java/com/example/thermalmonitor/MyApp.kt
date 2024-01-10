@@ -21,4 +21,6 @@ class MyApp : Application() {
     fun getThermalViewModel(): ThermalViewModel {
         return thermalViewModel
     }
+
+
 }

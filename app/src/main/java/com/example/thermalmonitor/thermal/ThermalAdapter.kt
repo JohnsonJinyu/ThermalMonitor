@@ -33,7 +33,7 @@ class ThermalAdapter(private var thermalList: List<ThermalData>, private val lis
                 //listener?.onItemCheckedChanged(thermalData.zone, thermalData.isChecked)
                 // 更新 _thermalList
                 // 不直接修改thermalData的isChecked属性，而是通过调用updateItem方法来修改isCheckedMap中的值
-                listener?.onItemCheckedChanged(thermalData.zone, isChecked)
+                listener.onItemCheckedChanged(thermalData.zone, isChecked)
             }
         }
     }
@@ -45,9 +45,6 @@ class ThermalAdapter(private var thermalList: List<ThermalData>, private val lis
     fun submitList(newList: List<ThermalData>) {
         thermalList = newList
         notifyDataSetChanged()
-        // Log 打印thermalList
-        //Log.d("ThermalAdapter", "submitList: $thermalList")
-        // 打印确认，这里的thermalList中的数据的isChecked属性是能够被UI 修改更新的
     }
 
 
@@ -58,7 +55,7 @@ class ThermalAdapter(private var thermalList: List<ThermalData>, private val lis
     fun selectAll(isChecked: Boolean) {
         thermalList.forEach {
             it.isChecked = isChecked
-            listener?.onItemCheckedChanged(it.zone, isChecked)
+            listener.onItemCheckedChanged(it.zone, isChecked)
         }
         notifyDataSetChanged()
     }
