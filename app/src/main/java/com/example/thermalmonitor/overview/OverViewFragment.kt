@@ -203,7 +203,7 @@ class OverViewFragment : Fragment(), OpenFolderListener {
 
     override fun onResume() {
         super.onResume()
-        //checkAndRequestPermissions()
+        checkAndRequestPermissions()
     }
 
 
@@ -244,10 +244,32 @@ class OverViewFragment : Fragment(), OpenFolderListener {
      * */
 
     private fun checkAndRequestPermissions() {
-        requestOverlayPermission()
-        requestBatteryOptimizationPermission()
-        requestManageExternalStoragePermission()
+        // 检查是否已经有所有需要的权限
+        var hasAllPermissions = true
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            hasAllPermissions = hasAllPermissions and Settings.canDrawOverlays(requireContext())
+            hasAllPermissions = hasAllPermissions and isIgnoringBatteryOptimizations()
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            hasAllPermissions = hasAllPermissions and Environment.isExternalStorageManager()
+        }
+
+        // 如果没有所有需要的权限，显示 AlertDialog
+        if (!hasAllPermissions) {
+            AlertDialog.Builder(requireContext())
+                .setTitle("权限请求")
+                .setMessage("我们需要以下权限来正常使用该应用……")
+                .setPositiveButton("确定") { _, _ ->
+                    // 用户点击确定后，请求权限
+                    requestOverlayPermission()
+                    requestBatteryOptimizationPermission()
+                    requestManageExternalStoragePermission()
+                }
+                .setNegativeButton("取消", null)
+                .show()
+        }
     }
+
 
     companion object {
         private const val REQUEST_OVERLAY_PERMISSION = 101
@@ -265,6 +287,8 @@ class OverViewFragment : Fragment(), OpenFolderListener {
                 Uri.parse("package:" + requireContext().packageName)
             )
             startActivityForResult(intent, REQUEST_OVERLAY_PERMISSION)
+        } else {
+            // 权限已经被授予，不需要再次请求
         }
     }
 
@@ -274,6 +298,8 @@ class OverViewFragment : Fragment(), OpenFolderListener {
             intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
             intent.data = Uri.parse("package:" + requireContext().packageName)
             startActivityForResult(intent, REQUEST_BATTERY_OPTIMIZATION_PERMISSION)
+        } else {
+            // 权限已经被授予，不需要再次请求
         }
     }
 
