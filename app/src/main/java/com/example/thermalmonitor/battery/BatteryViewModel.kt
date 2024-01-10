@@ -1,56 +1,57 @@
 package com.example.thermalmonitor.battery
 
 import android.app.Application
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import java.util.Timer
-import java.util.TimerTask
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 
 class BatteryViewModel(application: Application) : AndroidViewModel(application) {
 
     // 一个MutableLiveData对象，用于存储和更新电池信息
     private val _batteryData = MutableLiveData<BatteryData>()
+
     // 一个LiveData对象，用于暴露给UI层观察和订阅
     val batteryData: LiveData<BatteryData>
         get() = _batteryData
 
-    // 一个BroadcastReceiver对象，用于接收系统广播的电池信息变化
-    private val batteryReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            // 调用一个方法，用于获取电池信息并更新LiveData对象的值
-            updateBatteryData(intent)
+
+    // 定义一个协程作用域，这个作用域将在 ViewModel 销毁时取消
+    private val viewModelJob = SupervisorJob()
+    private val viewModelScope = CoroutineScope(Dispatchers.Main + viewModelJob)
+
+
+    init {
+        viewModelScope.launch {
+            while (isActive) {
+                // Log 打印证明当前协程执行了一次，避免出现协程启动多次
+                Log.d("BatteryViewModel", "协程执行了一次")
+
+                val intent = getApplication<Application>().registerReceiver(
+                    null,
+                    IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+                )
+                updateBatteryData(intent)
+                delay(1000) //每个一秒，执行一次任务
+            }
         }
     }
 
-    // 一个Timer对象，用于定时获取电池信息
-    private val timer = Timer()
 
-    // 在ViewModel初始化时，注册BroadcastReceiver对象，监听电池信息变化的系统广播，并启动Timer对象，每隔一秒就主动获取一次电池信息
-    init {
-        val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
-        getApplication<Application>().registerReceiver(batteryReceiver, filter)
-        timer.scheduleAtFixedRate(object : TimerTask() {
-            override fun run() {
-                // 获取当前的Intent对象，包含电池信息的额外数据
-                val intent = getApplication<Application>().registerReceiver(null, filter)
-                // 调用一个方法，用于获取电池信息并更新LiveData对象的值
-                updateBatteryData(intent)
-            }
-        }, 0, 1000) // 每隔1000毫秒（即1秒）执行一次任务
-    }
-
-    // 在ViewModel销毁时，注销BroadcastReceiver对象，取消Timer对象，避免内存泄漏
     override fun onCleared() {
         super.onCleared()
-        getApplication<Application>().unregisterReceiver(batteryReceiver)
-        timer.cancel()
+        viewModelJob.cancel()  // 当 ViewModel 销毁时，取消所有的协程
     }
 
     // 一个方法，用于获取电池信息，并更新LiveData对象的值

@@ -7,7 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import com.example.thermalmonitor.MyApp
 import com.example.thermalmonitor.databinding.FragmentBatteryBinding
 
 
@@ -19,7 +19,9 @@ class BatteryFragment : Fragment() {
     private val binding get() = _binding!!
 
     // 一个ViewModel对象，用于获取和暴露电池信息的数据
-    private val viewModel: BatteryViewModel by viewModels()
+    //private val viewModel: BatteryViewModel by viewModels()
+    // 声明一个viewModel
+    private lateinit var viewModel: BatteryViewModel
 
     // 在Fragment创建视图时，初始化ViewBinding对象，并返回根视图
     override fun onCreateView(
@@ -35,6 +37,10 @@ class BatteryFragment : Fragment() {
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // 使用getBatteryViewModel方法获取ThermalViewModel的实例
+        viewModel =  (activity?.application as MyApp).getBatteryViewModel()
+
         viewModel.batteryData.observe(viewLifecycleOwner) { batteryData ->
             binding.apply {
                 // 通过ViewBinding对象访问布局文件中的视图元素，并设置相应的数据
