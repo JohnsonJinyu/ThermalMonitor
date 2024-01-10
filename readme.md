@@ -1,5 +1,16 @@
 # ThermalMonitor版本更新记录
 
+## 2023/1/10
+### 改善点
+- 悬浮窗可以自定温度数据的显示
+- Thermal部分读取数据的协程并发问题优化解决
+
+### 存在的问题以及需要改善的地方
+- 整体颜色搭配，目前视觉感受差
+- battery、soc数据抓取考虑参考thermal调整到协程中执行，进一步降低功耗
+- battery、soc部分的数据的自定义显示需要完成
+- 以上完成后需要假电池验证功耗
+
 ## 2023/12/27
 ### 改善点
 - 重磅！！ 困扰好久的fragment_FileList不能显示完整的原因是viewpager的layout_height = "warp_content" ,已修复
