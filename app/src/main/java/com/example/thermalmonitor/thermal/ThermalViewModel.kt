@@ -35,11 +35,13 @@ class ThermalViewModel : ViewModel() {
         timerJob = viewModelScope.launch(Dispatchers.IO) {
 
             Log.d("CoroutineStatus", "Coroutine started") // 添加这条日志打印 已确认协程会启动两次
+
             while (isActive) { //检查协程是否还在活动状态
                 // 创建一个可变列表，用于存储有效的thermal_zone的type和temp值
                 val list = mutableListOf<ThermalData>()
                 //使用async函数并发读取每个thermal_zone的type以及temp值，返回Deferred对象
                 val deferred = mutableListOf<Deferred<Pair<String, String>>>()
+
                 for (i in 0..130) {
                     val zone = "thermal_zone$i"
                     deferred.add(async {

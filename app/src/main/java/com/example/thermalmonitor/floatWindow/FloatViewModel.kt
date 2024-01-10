@@ -99,48 +99,6 @@ class FloatViewModel(application: Application) : AndroidViewModel(application) {
 
     }
 
-
-    /**
-     * Thermal部分数据的观察与处理
-     * */
-
-    private val thermalDataObserver = Observer<List<ThermalData>> { thermalDataList ->
-        handleThermalData(thermalDataList)
-    }
-
-    private fun handleThermalData(thermalDataList: List<ThermalData>) {
-        // 这里处理thermal数据，并更新_floatData
-        val thermalDataItems = thermalDataList
-            .filter { it.isChecked }
-            .map {
-                FloatDataItem(
-                    itemName = it.type,
-                    itemValue = it.temp
-
-                )
-
-            }
-
-
-        this.thermalDataList.clear()
-        this.thermalDataList.addAll(thermalDataItems)
-
-        // 假设我们关心电池数据和thermal数据
-        _floatData.value = batteryDataList + this.thermalDataList
-        // Log打印一下thermalDataList
-        Log.d("thermalDataList", "handleThermalData: $thermalDataList")
-
-    }
-
-
-    private fun startObservingThermalData() {
-        thermalViewModel.thermalList.observeForever(thermalDataObserver)
-    }
-
-    private fun stopObservingThermalData() {
-        thermalViewModel.thermalList.removeObserver(thermalDataObserver)
-    }
-
     /**
      * 对thermal数据的观察与处理
      * */
