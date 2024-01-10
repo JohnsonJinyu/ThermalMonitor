@@ -4,22 +4,45 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-
-    <CheckBox
-        android:id="@+id/chb_thermal_select_all"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/linearLayout_thermalViewTitle"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="全选"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:flow_horizontalBias="0.5"
-        app:layout_constraintStart_toStartOf="parent"/>
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="12dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tv_thermalSelectDescription"
+            android:layout_width="0dp"
+            android:layout_height="25dp"
+            android:gravity="center_vertical"
+            android:layout_weight="1"
+            android:text="选择以显示到悬浮窗"
+            android:textSize="16sp"
+            android:textStyle="normal" />
+
+        <CheckBox
+            android:id="@+id/chb_thermal_select_all"
+            android:layout_width="wrap_content"
+            android:layout_height="25dp"
+            android:text="全选" />
+
+    </LinearLayout>
+
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_thermal"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:padding="15dp"
-        app:layout_constraintTop_toBottomOf="@+id/chb_thermal_select_all"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout_thermalViewTitle"
         app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="5dp"
         />
 </androidx.constraintlayout.widget.ConstraintLayout>
