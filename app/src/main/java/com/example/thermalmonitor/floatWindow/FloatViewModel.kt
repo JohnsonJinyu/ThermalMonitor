@@ -5,10 +5,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import com.example.thermalmonitor.MyApp
 import com.example.thermalmonitor.battery.BatteryData
-import com.example.thermalmonitor.soc.SocViewModel
 import com.example.thermalmonitor.thermal.ThermalData
 
 class FloatViewModel(application: Application) : AndroidViewModel(application) {
@@ -36,10 +34,12 @@ class FloatViewModel(application: Application) : AndroidViewModel(application) {
     private val thermalViewModel = (application as MyApp).getThermalViewModel()
 
 
-    private val socViewModel: SocViewModel by lazy {
+   /* private val socViewModel: SocViewModel by lazy {
         ViewModelProvider.AndroidViewModelFactory.getInstance(application)
             .create(SocViewModel::class.java)
-    }
+    }*/
+
+    private val socViewModel = (application as MyApp).getSocViewModel()
 
 
     // 定义一个中间列表，分别用于存储battery、thermal、soc的数据

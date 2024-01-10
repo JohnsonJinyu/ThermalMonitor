@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -36,7 +35,7 @@ class BatteryViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             while (isActive) {
                 // Log 打印证明当前协程执行了一次，避免出现协程启动多次
-                Log.d("BatteryViewModel", "协程执行了一次")
+                //Log.d("BatteryViewModel", "协程执行了一次")
 
                 val intent = getApplication<Application>().registerReceiver(
                     null,

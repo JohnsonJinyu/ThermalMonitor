@@ -20,7 +20,6 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.thermalmonitor.FloatWindowCallback
 import com.example.thermalmonitor.MyApp
 import com.example.thermalmonitor.databinding.FragmentOverviewBinding
-import com.example.thermalmonitor.soc.SocViewModel
 
 
 class OverViewFragment : Fragment(), OpenFolderListener {
@@ -61,7 +60,8 @@ class OverViewFragment : Fragment(), OpenFolderListener {
         val thermalViewModel = (activity?.application as MyApp).getThermalViewModel()
 
 
-        val socViewModel = ViewModelProvider(this)[SocViewModel::class.java]
+        val socViewModel = (activity?.application as MyApp).getSocViewModel()
+
         val dataProcessor = DataProcessToSave(thermalViewModel, socViewModel)
 
         // Create the ViewModelFactory and pass the dependencies

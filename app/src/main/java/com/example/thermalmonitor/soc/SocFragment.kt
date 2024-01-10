@@ -6,8 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.thermalmonitor.MyApp
 import com.example.thermalmonitor.databinding.FragmentSocBinding
 
 class SocFragment : Fragment() {
@@ -21,9 +21,8 @@ class SocFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentSocBinding.inflate(inflater, container, false) // 初始化view binding
-        //viewModel = ViewModelProvider(this)[SocViewModel::class.java] // 初始化view model
-        viewModel = ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application))[SocViewModel::class.java]
 
+        viewModel = (activity?.application as MyApp).getSocViewModel() // 使用MyApp中的方法获取view model的实例
 
         adapter = SocAdapter() // 初始化adapter
         binding.recyclerView.adapter = adapter // 绑定adapter到recycler view

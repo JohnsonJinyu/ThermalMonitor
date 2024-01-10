@@ -2,6 +2,7 @@ package com.example.thermalmonitor
 
 import android.app.Application
 import com.example.thermalmonitor.battery.BatteryViewModel
+import com.example.thermalmonitor.soc.SocViewModel
 import com.example.thermalmonitor.thermal.ThermalViewModel
 
 class MyApp : Application() {
@@ -11,6 +12,8 @@ class MyApp : Application() {
     private lateinit var thermalViewModel: ThermalViewModel
     // 声明一个late init变量，用于保存BatteryViewModel的实例
     private lateinit var batteryViewModel: BatteryViewModel
+    // 声明一个late init变量，用于保存SocViewModel的实例
+    private lateinit var socViewModel: SocViewModel
 
     override fun onCreate() {
         super.onCreate()
@@ -19,6 +22,8 @@ class MyApp : Application() {
         thermalViewModel = ThermalViewModel(this)
         // 创建BatteryViewModel的实例
         batteryViewModel = BatteryViewModel(this)
+        // 创建SocViewModel的实例
+        socViewModel = SocViewModel(this)
     }
 
 
@@ -30,6 +35,11 @@ class MyApp : Application() {
     // 为了在FloatWindow中获取BatteryViewModel的实例，需要添加一个方法
     fun getBatteryViewModel(): BatteryViewModel {
         return batteryViewModel
+    }
+
+    // 为了在FloatWindow中获取SocViewModel的实例，需要添加一个方法
+    fun getSocViewModel(): SocViewModel {
+        return socViewModel
     }
 
 
