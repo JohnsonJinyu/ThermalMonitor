@@ -23,9 +23,7 @@ import java.util.Date
 import java.util.Locale
 
 // 定义一个接口
-interface OpenFolderListener {
-    fun openFolder()
-}
+
 
 class DataCaptureViewModel(
     private val batteryViewModel: BatteryViewModel,

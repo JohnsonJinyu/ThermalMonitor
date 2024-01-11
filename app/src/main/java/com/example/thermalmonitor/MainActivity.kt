@@ -164,12 +164,5 @@ class MainActivity : AppCompatActivity() ,FloatWindowCallback{
 }
 
 
-interface FloatWindowCallback {
-
-    fun showFloatWindow()
-
-    fun hideFloatWindow()
-
-}
 
 

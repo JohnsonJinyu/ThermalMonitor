@@ -138,7 +138,7 @@ class FloatViewModel(application: Application) : AndroidViewModel(application) {
         // 更新 _floatData
         _floatData.value = batteryDataItems + thermalDataItems
         // Log打印thermalDataItems
-        //Log.d("thermalDataItems", "thermalDataItems: $thermalDataItems")
+        // Log.d("thermalDataItems", "thermalDataItems: $thermalDataItems")
     }
 
 
