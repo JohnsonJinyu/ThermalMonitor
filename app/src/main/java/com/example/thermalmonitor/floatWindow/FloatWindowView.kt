@@ -41,6 +41,9 @@ class FloatWindowView(context: Context, attrs: AttributeSet? = null) : FrameLayo
         val dragHandle = view.findViewById<ImageButton>(R.id.drag_handle)
         val minOrMaxButton = view.findViewById<ImageButton>(R.id.btn_floatWindow_Min)
 
+        val btnFloatStart = view.findViewById<ImageButton>(R.id.btn_floatWindow_Start)
+        val btnFloatStop = view.findViewById<ImageButton>(R.id.btn_floatWindow_Stop)
+
         // 获取悬浮窗中的recyclerview，并设置布局管理器
         val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView_float)
 
@@ -81,6 +84,18 @@ class FloatWindowView(context: Context, attrs: AttributeSet? = null) : FrameLayo
             }
 
             updateSize()
+        }
+
+        // 开始图标的点击事件
+        btnFloatStart.setOnClickListener {
+            //Log.i("btnFloatStart is ok?", "yes")
+            //floatWindowService.startCapture()
+        }
+
+        // 停止图标的点击事件
+        btnFloatStop.setOnClickListener {
+            //Log.i("btnFloatStop is ok?", "yes")
+            //floatWindowService.stopCapture()
         }
     }
 
