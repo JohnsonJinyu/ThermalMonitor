@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.thermalmonitor.R
 
+
 /**
  * 悬浮窗视图管理类
  * */
@@ -42,6 +43,8 @@ class FloatWindowView(context: Context, attrs: AttributeSet? = null) : FrameLayo
 
         // 获取悬浮窗中的recyclerview，并设置布局管理器
         val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView_float)
+
+
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = adapter
 
@@ -91,7 +94,7 @@ class FloatWindowView(context: Context, attrs: AttributeSet? = null) : FrameLayo
     // 悬浮窗缩放大小调整
     private fun updateSize() {
         layoutParams?.let { params ->
-            params.height = if (isMinimized) dpToPx(30) else dpToPx(320)
+            params.height = if (isMinimized) dpToPx(30) else dpToPx(280)
             windowManager.updateViewLayout(this, params)
         }
     }
