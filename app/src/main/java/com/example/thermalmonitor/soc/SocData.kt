@@ -10,5 +10,6 @@ data class StaticInfo( // 静态信息的数据类，包含硬件名称、核心
 
 data class DynamicInfo( // 动态信息的数据类，包含核心编号和核心频率两个属性
     val coreNumber: Int,
-    val coreFrequency: Int
+    val coreFrequency: Int,
+    var isChecked: Boolean = false //添加一个布尔值来表示是否选中
 )

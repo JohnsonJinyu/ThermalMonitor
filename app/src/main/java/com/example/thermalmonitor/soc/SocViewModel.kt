@@ -1,6 +1,7 @@
 package com.example.thermalmonitor.soc
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -23,6 +24,18 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _dynamicInfo = MutableLiveData<List<DynamicInfo>>() // 动态信息的内部可变数据，只能在view model中修改
     val dynamicInfo: LiveData<List<DynamicInfo>> = _dynamicInfo // 动态信息的外部不可变数据，可以在fragment中观察
+
+    /**
+     * 在ViewModel中创建了一个Adapter的实例，并提供了onCheckedChange函数的实现。
+     * 在这个实现中，我更新了_dynamicInfo的值。我首先获取了旧的DynamicInfo列表，然后用map方法创建了一个新的列表
+     * ，这个新的列表中，核心编号为coreNumber的对象的isChecked属性被更新为新的状态，
+     * 其他的对象保持不变。然后，我用这个新的列表更新了_dynamicInfo的值。
+     * */
+    val adapter = SocAdapter { coreNumber, isChecked ->
+        _dynamicInfo.value = _dynamicInfo.value?.map {
+            if (it.coreNumber == coreNumber) it.copy(isChecked = isChecked) else it
+        }
+    }
 
 
     // 定义一个协程作用域，这个作用域将在 ViewModel 销毁时取消
@@ -106,42 +119,59 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
 
 
     private fun readDynamicInfo() {
-        viewModelScope.launch { Dispatchers.IO }  // 在IO线程中读取文件
-        try {
-            // 在尝试读取文件前进行权限检查
-            if (dynamicInfoFile.canRead()) {
-                // 读取文件的逻辑
-                val list = mutableListOf<DynamicInfo>() // 创建一个动态信息列表，用于存储读取到的数据
+        viewModelScope.launch(Dispatchers.IO) { // 在IO线程中读取文件
+            try {
+                // 在尝试读取文件前进行权限检查
+                if (dynamicInfoFile.canRead()) {
+                    // 读取文件的逻辑
+                    val oldList = _dynamicInfo.value ?: emptyList<DynamicInfo>() // 获取当前的动态信息列表
+                    val newList = mutableListOf<DynamicInfo>() // 创建一个新的动态信息列表，用于存储读取到的数据
 
-                for (i in 0 until (staticInfo.value?.coreCount
-                    ?: 0).toInt()) { // 遍历每个核心，根据核心数来确定循环次数
-                    val file =
-                        File(dynamicInfoFile, "cpu$i/cpufreq/scaling_cur_freq") // 根据核心编号，拼接出对应的文件路径
-                    val frequency =
-                        file.readText().trim().toInt() / 1000 // 读取文件内容，并转换为整数，并除以1000得到MHz单位
-                    val info = DynamicInfo(i + 1, frequency) // 创建一个动态信息对象，用于存储核心编号和频率
-                    list.add(info) // 将对象添加到列表中
+                    for (i in 0 until (staticInfo.value?.coreCount
+                        ?: 0).toInt()) { // 遍历每个核心，根据核心数来确定循环次数
+                        val file = File(
+                            dynamicInfoFile,
+                            "cpu$i/cpufreq/scaling_cur_freq"
+                        ) // 根据核心编号，拼接出对应的文件路径
+                        val frequency =
+                            file.readText().trim().toInt() / 1000 // 读取文件内容，并转换为整数，并除以1000得到MHz单位
+                        val isChecked = oldList.find { it.coreNumber == i + 1 }?.isChecked
+                            ?: false // 查找当前核心的isChecked状态，如果找不到，就默认为false
+                        val info = DynamicInfo(
+                            i + 1,
+                            frequency,
+                            isChecked
+                        ) // 创建一个新的动态信息对象，用于存储核心编号、频率和isChecked状态
+                        newList.add(info) // 将新的动态信息对象添加到新的列表中
+                    }
+
+                    _dynamicInfo.postValue(newList) // 在子线程中更新动态信息的数据，使用postValue方法
+                    Log.d("newList", "$newList")
+                } else {
+                    // 记录日志，提示文件访问权限受限
+                    Timber.tag("SocViewModel").e("Permission denied: Cannot read dynamic info file")
                 }
-
-                _dynamicInfo.postValue(list) // 在子线程中更新动态信息的数据，使用postValue方法
-            } else {
-                // 记录日志，提示文件访问权限受限
-                Timber.tag("SocViewModel").e("Permission denied: Cannot read dynamic info file")
+            } catch (e: SecurityException) {
+                // 捕获权限异常，记录日志
+                Timber.tag("SocViewModel").e(e, "Security exception when reading dynamic info file")
+            } catch (e: Exception) {
+                // 捕获其他异常，记录日志
+                Timber.tag("SocViewModel").e(e, "Failed to read dynamic info file")
             }
-        } catch (e: SecurityException) {
-            // 捕获权限异常，记录日志
-            Timber.tag("SocViewModel").e(e, "Security exception when reading dynamic info file")
-        } catch (e: Exception) {
-            // 捕获其他异常，记录日志
-            Timber.tag("SocViewModel").e(e, "Failed to read dynamic info file")
         }
-
-
     }
 
 
     override fun onCleared() {
         super.onCleared()
         viewModelJob.cancel()  // 当 ViewModel 销毁时，取消所有的协程
+    }
+
+
+
+    fun updateCheckedState(coreNumber: Int, isChecked: Boolean) {
+        _dynamicInfo.value = _dynamicInfo.value?.map {
+            if (it.coreNumber == coreNumber) it.copy(isChecked = isChecked) else it
+        }
     }
 }

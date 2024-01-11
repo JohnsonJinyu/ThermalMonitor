@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.example.thermalmonitor.MyApp
 import com.example.thermalmonitor.battery.BatteryData
+import com.example.thermalmonitor.soc.DynamicInfo
 import com.example.thermalmonitor.thermal.ThermalData
 
 class FloatViewModel(application: Application) : AndroidViewModel(application) {
@@ -112,6 +113,25 @@ class FloatViewModel(application: Application) : AndroidViewModel(application) {
 
 
     /**
+     *对socDynamicInfo的观察
+     * */
+    private val socDynamicInfoObserver = Observer<List<DynamicInfo>> { _ ->
+        updateFloatData()
+    }
+
+    // 启动socDynamicInfo的观察者
+    private fun startObservingSocDynamicInfo() {
+        socViewModel.dynamicInfo.observeForever(socDynamicInfoObserver)
+    }
+
+    // 停止socDynamicInfo的观察者
+    private fun stopObservingSocDynamicInfo() {
+        socViewModel.dynamicInfo.removeObserver(socDynamicInfoObserver)
+    }
+
+
+
+    /**
      * 处理及更新数据
      * */
 
@@ -136,9 +156,20 @@ class FloatViewModel(application: Application) : AndroidViewModel(application) {
         } ?: emptyList()
 
         // 更新 _floatData
-        _floatData.value = batteryDataItems + thermalDataItems
-        // Log打印thermalDataItems
-        // Log.d("thermalDataItems", "thermalDataItems: $thermalDataItems")
+        //_floatData.value = batteryDataItems + thermalDataItems
+
+
+        // 虎丘被选中的soc frequency数据
+        val checkedSocDynamicInfo = socViewModel.dynamicInfo.value?.filter { it.isChecked }
+        val socDynamicInfoItems = checkedSocDynamicInfo?.map {
+            FloatDataItem("Core ${it.coreNumber}", "${it.coreFrequency}MHz")
+        } ?: emptyList()
+
+        // 更新 _floatData
+
+        _floatData.value = batteryDataItems + thermalDataItems + socDynamicInfoItems
+        //Log.d("socDynamicInfoItems", socDynamicInfoItems.toString())
+
     }
 
 

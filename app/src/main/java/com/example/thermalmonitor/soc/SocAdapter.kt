@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.thermalmonitor.databinding.SocDynamicItemBinding
 
 
-class SocAdapter : ListAdapter<DynamicInfo, SocAdapter.ViewHolder>(DiffCallback()) {
+class SocAdapter(private val onCheckedChange: (coreNumber: Int, isChecked: Boolean) -> Unit) : ListAdapter<DynamicInfo, SocAdapter.ViewHolder>(DiffCallback()){
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = SocDynamicItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -17,7 +17,8 @@ class SocAdapter : ListAdapter<DynamicInfo, SocAdapter.ViewHolder>(DiffCallback(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        val dynamicInfo = getItem(position)
+        holder.bind(dynamicInfo)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int , payloads : MutableList<Any>) {
@@ -31,13 +32,41 @@ class SocAdapter : ListAdapter<DynamicInfo, SocAdapter.ViewHolder>(DiffCallback(
         }
     }
 
-    class ViewHolder(private val binding: SocDynamicItemBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class ViewHolder(private val binding: SocDynamicItemBinding) : RecyclerView.ViewHolder(binding.root) {
+
+        private lateinit var dynamicInfo: DynamicInfo
+
+        init {
+            binding.checkBox.setOnCheckedChangeListener { _, isChecked ->
+                dynamicInfo.isChecked = isChecked
+                onCheckedChange(dynamicInfo.coreNumber, isChecked)
+            }
+        }
 
         @SuppressLint("SetTextI18n")
         fun bind(info: DynamicInfo) {
+            dynamicInfo = info // 保存DynamicInfo对象的引用，以便在复选框的监听器中使用
             binding.coreNumber.text = "核心${info.coreNumber}" // 设置核心编号
             binding.coreFrequency.text = "${info.coreFrequency}MHz" // 设置核心频率
+
+            // 先移除OnCheckedChangeListener
+            binding.checkBox.setOnCheckedChangeListener(null)
+            // 更改CheckBox的选中状态
+            binding.checkBox.isChecked = info.isChecked
+            // 再为CheckBox添加OnCheckedChangeListener
+            binding.checkBox.setOnCheckedChangeListener { _, isChecked ->
+                dynamicInfo.isChecked = isChecked
+                onCheckedChange(dynamicInfo.coreNumber, isChecked)
+            }
         }
+        /**
+         *当你在bind方法中改变CheckBox的选中状态时，OnCheckedChangeListener就不会被触发，
+         * 所以dynamicInfo.isChecked的值就不会被更改。
+         *
+         * 当用户在界面上点击CheckBox改变其选中状态时，OnCheckedChangeListener会被触发，
+         * 所以dynamicInfo.isChecked的值会被更新为用户选择的状态
+         *
+         * */
 
         // add this method, only for update frequency data
         @SuppressLint("SetTextI18n")
@@ -45,6 +74,7 @@ class SocAdapter : ListAdapter<DynamicInfo, SocAdapter.ViewHolder>(DiffCallback(
             binding.coreFrequency.text = "${frequency}MHz"
         }
     }
+
 
     class DiffCallback : DiffUtil.ItemCallback<DynamicInfo>() {
 
@@ -68,3 +98,4 @@ class SocAdapter : ListAdapter<DynamicInfo, SocAdapter.ViewHolder>(DiffCallback(
         }
     }
 }
+

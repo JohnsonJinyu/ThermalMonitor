@@ -24,7 +24,9 @@ class SocFragment : Fragment() {
 
         viewModel = (activity?.application as MyApp).getSocViewModel() // 使用MyApp中的方法获取view model的实例
 
-        adapter = SocAdapter() // 初始化adapter
+        adapter = SocAdapter { coreNumber, isChecked ->
+            viewModel.updateCheckedState(coreNumber, isChecked)
+        }                                       // 初始化adapter
         binding.recyclerView.adapter = adapter // 绑定adapter到recycler view
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext()) // 设置recycler view的布局管理器为线性布局
 
