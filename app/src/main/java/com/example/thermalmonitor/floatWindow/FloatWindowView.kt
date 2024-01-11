@@ -30,7 +30,7 @@ class FloatWindowView(context: Context, attrs: AttributeSet? = null) : FrameLayo
     private val iconMinimize = R.drawable.ic_minimize
     private val iconMaximize = R.drawable.ic_maximize
 
-    public val adapter = FloatAdapter(emptyList())
+    val adapter = FloatAdapter(emptyList())
 
 
     // 初始化

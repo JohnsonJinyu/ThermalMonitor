@@ -47,12 +47,12 @@ class MainActivity : AppCompatActivity() ,FloatWindowCallback{
             val binder = service as FloatWindowService.FloatWindowBinder
             floatWindowService = binder.getService()
             floatWindowServiceConnected = true
-            Log.d("service is connected?", "yes")
+            //Log.d("service is connected?", "yes")
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
             floatWindowServiceConnected = false
-            Log.d("service is connected?","No")
+            //Log.d("service is connected?","No")
 
         }
 
@@ -135,8 +135,9 @@ class MainActivity : AppCompatActivity() ,FloatWindowCallback{
 
     override fun onDestroy() {
         // 解绑浮动窗口服务
-        unbindService(floatWindowServiceConnection)
-        floatWindowServiceConnected = false
+        // 如果解绑，屏幕旋转后，悬浮窗口会消失
+        //unbindService(floatWindowServiceConnection)
+        //floatWindowServiceConnected = false
         super.onDestroy()
     }
 

@@ -1,7 +1,6 @@
 package com.example.thermalmonitor.soc
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -36,7 +35,7 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
         // 在协程中读取并更新动态数据信息
         viewModelScope.launch {
             while (isActive) {
-                Log.d("SocViewModel", "协程执行了一次")
+                //Log.d("SocViewModel", "协程执行了一次")
                 readDynamicInfo() // 读取动态信息并更新数据，并定时重复执行该任务以实现实时刷新
                 delay(1000) // 每隔1秒执行一次任务
             }
