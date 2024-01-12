@@ -17,9 +17,10 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.example.thermalmonitor.FloatWindowCallback
+import com.example.thermalmonitor.interfaces.FloatWindowCallback
 import com.example.thermalmonitor.MyApp
 import com.example.thermalmonitor.databinding.FragmentOverviewBinding
+import com.example.thermalmonitor.interfaces.OpenFolderListener
 
 
 class OverViewFragment : Fragment(), OpenFolderListener {

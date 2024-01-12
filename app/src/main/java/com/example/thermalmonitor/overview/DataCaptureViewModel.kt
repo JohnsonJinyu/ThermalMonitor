@@ -12,6 +12,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.thermalmonitor.battery.BatteryViewModel
+import com.example.thermalmonitor.interfaces.OpenFolderListener
 import com.example.thermalmonitor.soc.SocViewModel
 import com.example.thermalmonitor.thermal.ThermalViewModel
 import kotlinx.coroutines.Job

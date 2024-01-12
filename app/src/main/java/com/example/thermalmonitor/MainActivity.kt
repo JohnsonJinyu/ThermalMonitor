@@ -16,13 +16,14 @@ import androidx.viewpager2.widget.ViewPager2
 import com.example.thermalmonitor.battery.BatteryFragment
 import com.example.thermalmonitor.filesList.FilesListFragment
 import com.example.thermalmonitor.floatWindow.FloatWindowService
+import com.example.thermalmonitor.interfaces.FloatWindowCallback
 import com.example.thermalmonitor.overview.OverViewFragment
 import com.example.thermalmonitor.soc.SocFragment
 import com.example.thermalmonitor.thermal.ThermalFragment
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 
-class MainActivity : AppCompatActivity() ,FloatWindowCallback{
+class MainActivity : AppCompatActivity() , FloatWindowCallback {
 
     //定义一个SectionsPagerAdapter对象，用来提供Fragment给ViewPager2
     private lateinit var sectionsPagerAdapter: SectionsPagerAdapter
