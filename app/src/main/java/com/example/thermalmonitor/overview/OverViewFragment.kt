@@ -17,9 +17,9 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.example.thermalmonitor.interfaces.FloatWindowCallback
 import com.example.thermalmonitor.MyApp
 import com.example.thermalmonitor.databinding.FragmentOverviewBinding
+import com.example.thermalmonitor.interfaces.FloatWindowCallback
 import com.example.thermalmonitor.interfaces.OpenFolderListener
 
 
@@ -33,6 +33,8 @@ class OverViewFragment : Fragment(), OpenFolderListener {
 
     // 调用接口
     private var callback: FloatWindowCallback? = null
+
+
 
     @SuppressLint("SetTextI18n")
     @RequiresApi(Build.VERSION_CODES.R)
@@ -78,6 +80,11 @@ class OverViewFragment : Fragment(), OpenFolderListener {
         // Initialize the DataCaptureViewModel using the ViewModelFactory
         viewModel = ViewModelProvider(this, viewModelFactory)[DataCaptureViewModel::class.java]
 
+
+        // 分别定义三个变量绑定三个checkbox
+        val cbBattery = binding.cbBattery
+        val cbThermal = binding.cbThermal
+        val cbSoc = binding.cbSoc
 
 
         /**
@@ -135,7 +142,11 @@ class OverViewFragment : Fragment(), OpenFolderListener {
          * 设置开始按钮的点击事件
          * */
         binding.btnStart.setOnClickListener {
-            viewModel.startDataCapture()
+            if (!cbBattery.isChecked && !cbThermal.isChecked && !cbSoc.isChecked) {
+                Toast.makeText(requireContext(), "请至少选择一项数据", Toast.LENGTH_SHORT).show()
+            } else {
+                viewModel.startDataCapture()
+            }
         }
 
 

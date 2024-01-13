@@ -97,7 +97,9 @@ class DataCaptureViewModel(
      * 开始数据抓取的相关逻辑部分
      * */
     fun startDataCapture() {
-        if (!isRecording) {
+        if (!isRecording)
+        {
+
             isRecording = true
             job = viewModelScope.launch {
 
