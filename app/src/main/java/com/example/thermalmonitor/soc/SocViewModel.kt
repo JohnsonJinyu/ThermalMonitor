@@ -1,7 +1,6 @@
 package com.example.thermalmonitor.soc
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -146,7 +145,7 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
                     }
 
                     _dynamicInfo.postValue(newList) // 在子线程中更新动态信息的数据，使用postValue方法
-                    Log.d("newList", "$newList")
+                    //  Log.d("newList", "$newList")
                 } else {
                     // 记录日志，提示文件访问权限受限
                     Timber.tag("SocViewModel").e("Permission denied: Cannot read dynamic info file")
