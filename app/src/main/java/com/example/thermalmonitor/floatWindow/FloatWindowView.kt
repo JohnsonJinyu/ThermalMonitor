@@ -10,7 +10,9 @@ import android.widget.FrameLayout
 import android.widget.ImageButton
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.thermalmonitor.MyApp
 import com.example.thermalmonitor.R
+import com.example.thermalmonitor.overview.DataCaptureViewModel
 
 
 /**
@@ -24,6 +26,8 @@ class FloatWindowView(context: Context, attrs: AttributeSet? = null) : FrameLayo
     private var lastX: Float = 0f
     private var lastY: Float = 0f
 
+    private var dataCaptureViewModel: DataCaptureViewModel? = null
+
     // 定义一个变量表示悬浮窗的缩放状态
     private var isMinimized: Boolean = false
 
@@ -32,6 +36,7 @@ class FloatWindowView(context: Context, attrs: AttributeSet? = null) : FrameLayo
     private val iconMaximize = R.drawable.ic_maximize
 
     val adapter = FloatAdapter(emptyList())
+
 
 
     // 初始化
@@ -46,6 +51,13 @@ class FloatWindowView(context: Context, attrs: AttributeSet? = null) : FrameLayo
 
         // 获取悬浮窗中的recyclerview，并设置布局管理器
         val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView_float)
+
+        // 假设FloatWindowView在其构造函数中获得了Context
+        val myApp = context.applicationContext as MyApp
+        // 从MyApp实例中获取DataCaptureViewModel
+        dataCaptureViewModel = myApp.dataCaptureViewModel
+
+
 
 
         recyclerView.layoutManager = LinearLayoutManager(context)
@@ -88,14 +100,12 @@ class FloatWindowView(context: Context, attrs: AttributeSet? = null) : FrameLayo
 
         // 开始图标的点击事件
         btnFloatStart.setOnClickListener {
-            //Log.i("btnFloatStart is ok?", "yes")
-            //floatWindowService.startCapture()
+            dataCaptureViewModel!!.startDataCapture()
         }
 
         // 停止图标的点击事件
         btnFloatStop.setOnClickListener {
-            //Log.i("btnFloatStop is ok?", "yes")
-            //floatWindowService.stopCapture()
+            dataCaptureViewModel!!.stopDataCapture()
         }
     }
 

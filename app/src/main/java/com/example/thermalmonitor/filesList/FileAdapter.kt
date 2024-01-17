@@ -16,7 +16,7 @@ import kotlin.math.pow
 
 class FileAdapter(
     private val context: Context,
-    private val filesList: List<ExcelFile>
+    private var filesList: List<ExcelFile>
 ) :
     RecyclerView.Adapter<FileAdapter.ViewHolder>() {
 
@@ -44,7 +44,6 @@ class FileAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemFileBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ViewHolder(binding)
-        //return ViewHolder(LayoutInflater.from(context).inflate(R.layout.item_file),parent,false)
     }
 
     override fun getItemCount(): Int {
@@ -73,6 +72,12 @@ class FileAdapter(
     private fun getReadableDateTime(time: Long): String {
         val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
         return sdf.format(Date(time))
+    }
+
+
+    fun updateFilesList(newFilesList: List<ExcelFile>) {
+        filesList = newFilesList
+        notifyDataSetChanged()
     }
 
 }

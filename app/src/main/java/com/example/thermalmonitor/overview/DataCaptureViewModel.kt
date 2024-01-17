@@ -1,7 +1,6 @@
 package com.example.thermalmonitor.overview
 
 import android.annotation.SuppressLint
-import android.app.AlertDialog
 import android.content.ContentValues
 import android.content.Context
 import android.icu.text.SimpleDateFormat
@@ -12,7 +11,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.thermalmonitor.battery.BatteryViewModel
-import com.example.thermalmonitor.interfaces.OpenFolderListener
 import com.example.thermalmonitor.soc.SocViewModel
 import com.example.thermalmonitor.thermal.ThermalViewModel
 import kotlinx.coroutines.Job
@@ -31,8 +29,7 @@ class DataCaptureViewModel(
     private val thermalViewModel: ThermalViewModel,
     private val socViewModel: SocViewModel,
     private val dataProcessor: DataProcessToSave,
-    @SuppressLint("StaticFieldLeak") private val context: Context,
-    private val openFolderListener: OpenFolderListener // 添加一个接口参数
+    @SuppressLint("StaticFieldLeak") private val context: Context
 ) : ViewModel() {
 
     // 定义一个变量去判定是否在抓取状态，默认false
@@ -203,25 +200,9 @@ class DataCaptureViewModel(
                 socDataStoreArray = arrayOf()
                 timeDataArray = arrayOf()
 
-                // 弹窗提示保存路径
-                AlertDialog.Builder(context)
-                    .setTitle("保存成功")
-                    .setMessage("文件已保存到:/storage/emulated/0/Download/ThermalMonitor/$fileName")
-                    .setPositiveButton("打开文件夹") { _, _ ->
+                // 弹窗提示保存成功以及保存路径
+                showToast("数据保存成功，保存路径：${Environment.DIRECTORY_DOWNLOADS}/ThermalMonitor/$fileName")
 
-                        /**
-                         * 打开保存文件的目录
-                         * 目前还是有些问题
-                         * 后续再继续优化
-                         * */
-
-                        openFolderListener.openFolder() // 触发接口通知界面启动新的活动
-
-                    }
-                    .setNegativeButton("取消") { dialog, _ ->
-                        dialog.dismiss()
-                    }
-                    .show()
             }
         }
         else

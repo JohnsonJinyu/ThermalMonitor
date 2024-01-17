@@ -16,14 +16,12 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import com.example.thermalmonitor.MyApp
 import com.example.thermalmonitor.databinding.FragmentOverviewBinding
 import com.example.thermalmonitor.interfaces.FloatWindowCallback
-import com.example.thermalmonitor.interfaces.OpenFolderListener
 
 
-class OverViewFragment : Fragment(), OpenFolderListener {
+class OverViewFragment : Fragment() {
 
     /**
      * 这个类的目的是将读取的数据保存到设备
@@ -47,6 +45,11 @@ class OverViewFragment : Fragment(), OpenFolderListener {
         // Inflate the layout for this fragment
         val binding = FragmentOverviewBinding.inflate(inflater)
         binding.lifecycleOwner = this
+
+
+        // 获取Application实例
+        val myApp = requireActivity().application as MyApp
+        viewModel = myApp.dataCaptureViewModel // 获取DataCaptureViewModel实例
 
 
         /**
@@ -73,12 +76,11 @@ class OverViewFragment : Fragment(), OpenFolderListener {
             thermalViewModel,
             socViewModel,
             dataProcessor,
-            requireContext(),
-            this
+            requireContext()
         )
 
         // Initialize the DataCaptureViewModel using the ViewModelFactory
-        viewModel = ViewModelProvider(this, viewModelFactory)[DataCaptureViewModel::class.java]
+        //viewModel = ViewModelProvider(this, viewModelFactory)[DataCaptureViewModel::class.java]
 
 
         // 分别定义三个变量绑定三个checkbox
@@ -199,14 +201,7 @@ class OverViewFragment : Fragment(), OpenFolderListener {
     }
 
 
-    // 实现 OpenFolderListener 接口的方法，在这里启动新的活动
-    override fun openFolder() {
-        val intent = Intent(Intent.ACTION_GET_CONTENT)
-        val uri =
-            Uri.parse(Environment.getExternalStorageDirectory().path + "/Download/ThermalMonitor/")
-        intent.setDataAndType(uri, "*/*")
-        startActivity(Intent.createChooser(intent, "Open folder"))
-    }
+
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -218,6 +213,11 @@ class OverViewFragment : Fragment(), OpenFolderListener {
         checkAndRequestPermissions()
     }
 
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+
+    }
 
 
 

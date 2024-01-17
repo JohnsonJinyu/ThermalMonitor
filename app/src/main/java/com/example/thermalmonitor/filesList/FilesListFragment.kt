@@ -107,17 +107,27 @@ class FilesListFragment : Fragment() {
      * 重新进入此Fragment需要刷新文件列表
      * */
 
-    override fun onResume() {
-        super.onResume()
-        refreshFileList()
-    }
+        override fun onResume() {
+            super.onResume()
+            refreshFileList()
+        }
 
     @SuppressLint("NotifyDataSetChanged")
     private fun refreshFileList() {
-        fileList = getFileList()
-        fileAdapter = FileAdapter(requireContext(), fileList)
-        recycler.adapter = fileAdapter
-        fileAdapter.notifyDataSetChanged()
+        // 在UI线程中更新数据
+        activity?.runOnUiThread {
+            val newFileList = getFileList()
+            if (::fileAdapter.isInitialized) {
+                fileAdapter.updateFilesList(newFileList)
+                fileAdapter.notifyDataSetChanged()
+            } else {
+                fileAdapter = FileAdapter(requireContext(), newFileList)
+                recycler.adapter = fileAdapter
+            }
+        }
+
+
     }
+
 
 }

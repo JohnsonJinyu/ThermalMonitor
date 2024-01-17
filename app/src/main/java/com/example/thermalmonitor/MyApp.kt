@@ -1,7 +1,12 @@
 package com.example.thermalmonitor
 
 import android.app.Application
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStore
 import com.example.thermalmonitor.battery.BatteryViewModel
+import com.example.thermalmonitor.overview.DataCaptureViewModel
+import com.example.thermalmonitor.overview.DataProcessToSave
+import com.example.thermalmonitor.overview.ViewModelFactory
 import com.example.thermalmonitor.soc.SocViewModel
 import com.example.thermalmonitor.thermal.ThermalViewModel
 
@@ -15,6 +20,9 @@ class MyApp : Application() {
     // 声明一个late init变量，用于保存SocViewModel的实例
     private lateinit var socViewModel: SocViewModel
 
+    // DataCaptureViewModel的单例
+    lateinit var dataCaptureViewModel: DataCaptureViewModel
+
     override fun onCreate() {
         super.onCreate()
 
@@ -24,6 +32,16 @@ class MyApp : Application() {
         batteryViewModel = BatteryViewModel(this)
         // 创建SocViewModel的实例
         socViewModel = SocViewModel(this)
+
+
+        // 创建DataCaptureViewModel的单例
+        val dataProcessor = DataProcessToSave(thermalViewModel, socViewModel)
+        val factory = ViewModelFactory(batteryViewModel, thermalViewModel, socViewModel, dataProcessor, this  )
+        // 使用ViewModelProvider来创建DataCaptureViewModel实例
+        dataCaptureViewModel = ViewModelProvider(
+            ViewModelStore(),
+            factory
+        )[DataCaptureViewModel::class.java]
     }
 
 
