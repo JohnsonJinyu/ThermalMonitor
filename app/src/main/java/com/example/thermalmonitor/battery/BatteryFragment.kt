@@ -18,8 +18,6 @@ class BatteryFragment : Fragment() {
     private var _binding: FragmentBatteryBinding? = null
     private val binding get() = _binding!!
 
-    // 一个ViewModel对象，用于获取和暴露电池信息的数据
-    //private val viewModel: BatteryViewModel by viewModels()
     // 声明一个viewModel
     private lateinit var viewModel: BatteryViewModel
 

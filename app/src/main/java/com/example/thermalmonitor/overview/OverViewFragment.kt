@@ -5,7 +5,6 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.os.PowerManager
@@ -14,7 +13,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.annotation.RequiresApi
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import com.example.thermalmonitor.MyApp
 import com.example.thermalmonitor.databinding.FragmentOverviewBinding
@@ -35,7 +34,6 @@ class OverViewFragment : Fragment() {
 
 
     @SuppressLint("SetTextI18n")
-    @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -52,35 +50,6 @@ class OverViewFragment : Fragment() {
         viewModel = myApp.dataCaptureViewModel // 获取DataCaptureViewModel实例
 
 
-        /**
-         *
-         * 在 OverViewFragment 中实现 OpenFolderListener 接口，并提供 openFolder 方法的具体实现。
-         * 在 onViewCreated 方法中，创建 ViewModelFactory 实例时，传递当前 Fragment 作为 OpenFolderListener 实例。
-         * 使用 ViewModelProvider 初始化 DataCaptureViewModel 时，传递正确的 ViewModelFactory 实例。
-         * */
-        // 在 OverViewFragment 中使用 ViewModelProvider 和 ViewModelFactory 创建 DataCaptureViewModel 实例
-        val batteryViewModel = (activity?.application as MyApp).getBatteryViewModel()
-
-
-        // 将创建新的thermalViewModel实例改为使用getThermalViewModel方法获取已创建的实例
-        val thermalViewModel = (activity?.application as MyApp).getThermalViewModel()
-
-
-        val socViewModel = (activity?.application as MyApp).getSocViewModel()
-
-        val dataProcessor = DataProcessToSave(thermalViewModel, socViewModel)
-
-        // Create the ViewModelFactory and pass the dependencies
-        val viewModelFactory = ViewModelFactory(
-            batteryViewModel,
-            thermalViewModel,
-            socViewModel,
-            dataProcessor,
-            requireContext()
-        )
-
-        // Initialize the DataCaptureViewModel using the ViewModelFactory
-        //viewModel = ViewModelProvider(this, viewModelFactory)[DataCaptureViewModel::class.java]
 
 
         // 分别定义三个变量绑定三个checkbox
@@ -255,16 +224,52 @@ class OverViewFragment : Fragment() {
      * 权限申请部分
      * */
 
+
+
+    /**
+     * 申请权限的launcher
+     * */
+    // 使用新的ActivityResultContracts来请求权限
+
+    private val requestOverlayPermissionLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
+        if (Settings.canDrawOverlays(context)) {
+            // 悬浮窗权限已经被授予
+        } else {
+            // 用户未授予悬浮窗权限
+            showOverLayRationaleDialog()
+        }
+    }
+
+
+    private val requestBatteryOptimizationPermissionLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
+        if (isIgnoringBatteryOptimizations()) {
+            // 用户已经忽略电池优化
+        } else {
+            // 用户未忽略电池优化
+            showBatteryRationaleDialog()
+        }
+    }
+
+    private val requestManageExternalStoragePermissionLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
+        if (Environment.isExternalStorageManager()) {
+            // 外部存储管理权限已经被授予
+        } else {
+            // 用户未授予外部存储管理权限
+            showFilesRationaleDialog()
+        }
+    }
+
+
+
+    /**
+     * 检查和申请权限
+     * */
     private fun checkAndRequestPermissions() {
         // 检查是否已经有所有需要的权限
         var hasAllPermissions = true
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            hasAllPermissions = hasAllPermissions and Settings.canDrawOverlays(requireContext())
-            hasAllPermissions = hasAllPermissions and isIgnoringBatteryOptimizations()
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            hasAllPermissions = hasAllPermissions and Environment.isExternalStorageManager()
-        }
+        hasAllPermissions = hasAllPermissions and Settings.canDrawOverlays(requireContext())
+        hasAllPermissions = hasAllPermissions and isIgnoringBatteryOptimizations()
+        hasAllPermissions = hasAllPermissions and Environment.isExternalStorageManager()
 
         // 如果没有所有需要的权限，显示 AlertDialog
         if (!hasAllPermissions) {
@@ -283,74 +288,78 @@ class OverViewFragment : Fragment() {
     }
 
 
-    companion object {
-        private const val REQUEST_OVERLAY_PERMISSION = 101
-        private const val REQUEST_BATTERY_OPTIMIZATION_PERMISSION = 102
-        private const val REQUEST_MANAGE_EXTERNAL_STORAGE_PERMISSION = 103
-    }
 
+
+    /**
+     *
+     * 申请权限以及被拒绝后弹窗重复申请
+     * */
     private fun requestOverlayPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(
-                requireContext()
-            )
-        ) {
-            val intent = Intent(
-                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                Uri.parse("package:" + requireContext().packageName)
-            )
-            startActivityForResult(intent, REQUEST_OVERLAY_PERMISSION)
-        } else {
-            // 权限已经被授予，不需要再次请求
+        if (!Settings.canDrawOverlays(requireContext())) {
+            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${requireContext().packageName}"))
+            requestOverlayPermissionLauncher.launch(intent)
         }
     }
 
+    @SuppressLint("BatteryLife")
     private fun requestBatteryOptimizationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val intent = Intent()
-            intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
-            intent.data = Uri.parse("package:" + requireContext().packageName)
-            startActivityForResult(intent, REQUEST_BATTERY_OPTIMIZATION_PERMISSION)
-        } else {
-            // 权限已经被授予，不需要再次请求
+        if (!isIgnoringBatteryOptimizations()) {
+            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:${requireContext().packageName}"))
+            requestBatteryOptimizationPermissionLauncher.launch(intent)
         }
     }
 
     private fun requestManageExternalStoragePermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
+        if (!Environment.isExternalStorageManager()) {
             val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
-            startActivityForResult(intent, REQUEST_MANAGE_EXTERNAL_STORAGE_PERMISSION)
+            requestManageExternalStoragePermissionLauncher.launch(intent)
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_OVERLAY_PERMISSION) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Settings.canDrawOverlays(
-                    requireContext()
-                )
-            ) {
-                // 悬浮窗权限已经被授予
-            } else {
-                // 用户未授予悬浮窗权限
-            }
-        } else if (requestCode == REQUEST_BATTERY_OPTIMIZATION_PERMISSION) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !isIgnoringBatteryOptimizations()) {
-                // 用户未忽略电池优化
-            } else {
-                // 用户已经忽略电池优化
-            }
-        } else if (requestCode == REQUEST_MANAGE_EXTERNAL_STORAGE_PERMISSION) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && Environment.isExternalStorageManager()) {
-                // 外部存储管理权限已经被授予
-            } else {
-                // 用户未授予外部存储管理权限
-            }
-        }
-    }
 
     private fun isIgnoringBatteryOptimizations(): Boolean {
         val powerManager = requireContext().getSystemService(Context.POWER_SERVICE) as PowerManager
         return powerManager.isIgnoringBatteryOptimizations(requireContext().packageName)
+    }
+
+    private fun showOverLayRationaleDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("需要悬浮窗权限")
+            .setMessage("此应用需要悬浮窗权限来提供悬浮功能。请在设置中授予悬浮窗权限。")
+            .setPositiveButton("设置") { _, _ ->
+                // 引导用户再次打开设置页面
+                val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${requireContext().packageName}"))
+                requestOverlayPermissionLauncher.launch(intent)
+            }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+    @SuppressLint("BatteryLife")
+    private fun showBatteryRationaleDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("需要忽略电池优化")
+            .setMessage("此应用需要需要忽略电池优化，方式后台被杀。")
+            .setPositiveButton("设置") { _, _ ->
+                // 引导用户再次打开设置页面
+                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:${requireContext().packageName}"))
+                requestOverlayPermissionLauncher.launch(intent)
+            }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+    private fun showFilesRationaleDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("需要文件管理权限")
+            .setMessage("此应用需要文件管理权限读取数据以及保存文件。")
+            .setPositiveButton("设置") { _, _ ->
+                // 引导用户再次打开设置页面
+                val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:${requireContext().packageName}"))
+                requestOverlayPermissionLauncher.launch(intent)
+            }
+            .setNegativeButton("取消", null)
+            .show()
     }
 
 }

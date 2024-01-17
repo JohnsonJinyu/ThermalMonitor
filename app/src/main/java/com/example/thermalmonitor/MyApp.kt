@@ -34,7 +34,7 @@ class MyApp : Application() {
         socViewModel = SocViewModel(this)
 
 
-        // 创建DataCaptureViewModel的单例
+        // 创建DataCaptureViewModel的单例，然后用于OverViewFragment以及FloatWindow中共享
         val dataProcessor = DataProcessToSave(thermalViewModel, socViewModel)
         val factory = ViewModelFactory(batteryViewModel, thermalViewModel, socViewModel, dataProcessor, this  )
         // 使用ViewModelProvider来创建DataCaptureViewModel实例

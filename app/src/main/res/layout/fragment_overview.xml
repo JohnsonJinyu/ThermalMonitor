@@ -91,18 +91,22 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="开启悬浮窗"
+            android:layout_marginStart="50dp"
+            android:layout_marginEnd="50dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btn_start" />
+            app:layout_constraintBottom_toTopOf="@+id/btn_end_float" />
 
         <Button
             android:id="@+id/btn_end_float"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="关闭悬浮窗"
+            android:layout_marginStart="50dp"
+            android:layout_marginEnd="50dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btn_start_float" />
+            app:layout_constraintBottom_toBottomOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

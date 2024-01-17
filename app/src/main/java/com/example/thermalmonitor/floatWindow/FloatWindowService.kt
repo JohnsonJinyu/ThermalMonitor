@@ -3,7 +3,6 @@ package com.example.thermalmonitor.floatWindow
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
-import android.util.Log
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.Observer
 
@@ -43,7 +42,7 @@ class FloatWindowService : LifecycleService() {
 
 
     fun show() {
-        Log.d("show方法是否被调用", "是的")
+        //Log.d("show方法是否被调用", "是的")
         if (::floatWindowManager.isInitialized && !floatWindowManager.isShowing()) {
             floatWindowManager.show()
 
@@ -54,8 +53,6 @@ class FloatWindowService : LifecycleService() {
                 floatWindowManager.floatView.adapter.updateData(floatDataItems)
             })
         }
-
-
     }
 
     fun hide() {

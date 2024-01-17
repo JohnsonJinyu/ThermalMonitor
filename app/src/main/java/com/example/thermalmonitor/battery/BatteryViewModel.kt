@@ -33,10 +33,7 @@ class BatteryViewModel(application: Application) : AndroidViewModel(application)
 
     init {
         viewModelScope.launch {
-            while (isActive) {
-                // Log 打印证明当前协程执行了一次，避免出现协程启动多次
-                //Log.d("BatteryViewModel", "协程执行了一次")
-
+            while (isActive) { // 当 ViewModel 没有销毁时，循环执行任务
                 val intent = getApplication<Application>().registerReceiver(
                     null,
                     IntentFilter(Intent.ACTION_BATTERY_CHANGED)

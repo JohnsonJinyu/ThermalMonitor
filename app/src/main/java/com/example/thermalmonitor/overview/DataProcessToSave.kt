@@ -68,8 +68,8 @@ class DataProcessToSave(
             val cell = row.createCell(0)
             cell.setCellValue(data[i - 1][0]) // write the timestamp to the first cell
             for (j in 1 until titleArrayThermal.size) {
-                val cell = row.createCell(j)
-                cell.setCellValue(data[i - 1][j]) // write the temperatures to the rest cells, skipping the first 6 columns of battery data
+                val cell1 = row.createCell(j)
+                cell1.setCellValue(data[i - 1][j]) // write the temperatures to the rest cells, skipping the first 6 columns of battery data
             }
         }
     }
@@ -95,9 +95,9 @@ class DataProcessToSave(
             val cell = row.createCell(0)
             cell.setCellValue(data[i - 1][0]) // write the timestamp to the first cell
             for (j in 1 until titleArraySoc.size) {
-                val cell = row.createCell(j)
+                val cell2 = row.createCell(j)
                 // write the frequencies to the rest cells
-                cell.setCellValue(data[i - 1][j])
+                cell2.setCellValue(data[i - 1][j])
             }
         }
     }

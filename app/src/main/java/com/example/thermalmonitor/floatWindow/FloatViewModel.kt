@@ -18,34 +18,10 @@ class FloatViewModel(application: Application) : AndroidViewModel(application) {
         get() = _floatData
 
 
-    // 使用ViewModelProvider来获取ViewModel实例
-    /*private val batteryViewModel: BatteryViewModel by lazy {
-        ViewModelProvider.AndroidViewModelFactory.getInstance(application)
-            .create(BatteryViewModel::class.java)
-    }*/
-    private val batteryViewModel =  (application as MyApp).getBatteryViewModel()
-
-
-    // 使用MyApp中的getThermalViewModel方法来获取ThermalViewModel的实例
-    // 假设ThermalViewModel和SocViewModel也是AndroidViewModel的子类
-    /*private val thermalViewModel: ThermalViewModel by lazy {
-        ViewModelProvider.AndroidViewModelFactory.getInstance(application)
-            .create(ThermalViewModel::class.java)
-    }*/
+    // 获取其他ViewModel
+    private val batteryViewModel = (application as MyApp).getBatteryViewModel()
     private val thermalViewModel = (application as MyApp).getThermalViewModel()
-
-
-   /* private val socViewModel: SocViewModel by lazy {
-        ViewModelProvider.AndroidViewModelFactory.getInstance(application)
-            .create(SocViewModel::class.java)
-    }*/
-
     private val socViewModel = (application as MyApp).getSocViewModel()
-
-
-    // 定义一个中间列表，分别用于存储battery、thermal、soc的数据
-    private val batteryDataList = mutableListOf<FloatDataItem>()
-    private val thermalDataList = mutableListOf<FloatDataItem>()
 
 
 
@@ -57,15 +33,15 @@ class FloatViewModel(application: Application) : AndroidViewModel(application) {
         // 启动观察其他ViewModel
         startObservingBatteryData()
         startObservingThermalData()
+        startObservingSocDynamicInfo()
     }
 
     fun stopObserving() {
         // 停止观察
         stopObservingBatteryData()
         stopObservingThermalData()
+        stopObservingSocDynamicInfo()
     }
-
-
 
 
     /**
@@ -82,12 +58,11 @@ class FloatViewModel(application: Application) : AndroidViewModel(application) {
     private fun stopObservingBatteryData() {
         batteryViewModel.batteryData.removeObserver(batteryDataObserver)
     }
+
     // 暂存观察者引用，以便可以移除
     private val batteryDataObserver = Observer<BatteryData> { _ ->
         updateFloatData()
     }
-
-
 
 
     /**
@@ -111,7 +86,6 @@ class FloatViewModel(application: Application) : AndroidViewModel(application) {
     }
 
 
-
     /**
      *对socDynamicInfo的观察
      * */
@@ -128,7 +102,6 @@ class FloatViewModel(application: Application) : AndroidViewModel(application) {
     private fun stopObservingSocDynamicInfo() {
         socViewModel.dynamicInfo.removeObserver(socDynamicInfoObserver)
     }
-
 
 
     /**
@@ -168,7 +141,7 @@ class FloatViewModel(application: Application) : AndroidViewModel(application) {
         // 更新 _floatData
 
         _floatData.value = batteryDataItems + thermalDataItems + socDynamicInfoItems
-        //Log.d("socDynamicInfoItems", socDynamicInfoItems.toString())
+
 
     }
 

@@ -78,15 +78,9 @@ class DataCaptureViewModel(
     }
 
 
-
     private val _showAbortDialog = MutableLiveData<Unit>()
     val showAbortDialog: LiveData<Unit>
         get() = _showAbortDialog
-
-
-
-
-
 
 
 
