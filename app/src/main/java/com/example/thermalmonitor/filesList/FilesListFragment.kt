@@ -123,6 +123,8 @@ class FilesListFragment : Fragment() {
             } else {
                 fileAdapter = FileAdapter(requireContext(), newFileList)
                 recycler.adapter = fileAdapter
+
+
             }
         }
 
