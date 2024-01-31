@@ -26,6 +26,7 @@ class OverViewFragment : Fragment() {
      * 这个类的目的是将读取的数据保存到设备
      * */
 
+
     private lateinit var viewModel: DataCaptureViewModel
 
     // 调用接口
