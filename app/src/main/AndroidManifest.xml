@@ -18,9 +18,9 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:requestLegacyExternalStorage="true"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/icon"
+        android:icon="@mipmap/icon_new"
         android:label="ThermalMonitor"
-        android:roundIcon="@mipmap/icon"
+        android:roundIcon="@mipmap/icon_new_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ThermalMonitor"
         tools:targetApi="31">
