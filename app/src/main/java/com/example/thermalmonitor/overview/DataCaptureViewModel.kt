@@ -6,10 +6,13 @@ import android.content.Context
 import android.icu.text.SimpleDateFormat
 import android.os.Environment
 import android.provider.MediaStore
+import android.widget.Toast
+import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.thermalmonitor.R
 import com.example.thermalmonitor.battery.BatteryViewModel
 import com.example.thermalmonitor.soc.SocViewModel
 import com.example.thermalmonitor.thermal.ThermalViewModel
@@ -92,10 +95,17 @@ class DataCaptureViewModel(
         {
 
             isRecording = true
+
+
             job = viewModelScope.launch {
+                //showToast("已开始记录！")
+                Toast.makeText(context,"start !",Toast.LENGTH_SHORT).show()
+
+
 
                 currentTime = 0 //重置计时器的值
                 _timer.value = "00:00:00"  //更新 LiveData 对象
+
 
                 while (isRecording) {
                     // 这里放置数据抓取和更新 UI 的逻辑
