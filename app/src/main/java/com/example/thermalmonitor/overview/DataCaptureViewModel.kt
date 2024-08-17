@@ -99,7 +99,7 @@ class DataCaptureViewModel(
 
             job = viewModelScope.launch {
                 //showToast("已开始记录！")
-                Toast.makeText(context,"start !",Toast.LENGTH_SHORT).show()
+                Toast.makeText(context,"已开始记录！",Toast.LENGTH_SHORT).show()
 
 
 

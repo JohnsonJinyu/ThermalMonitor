@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -18,9 +19,9 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:requestLegacyExternalStorage="true"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/icon_new"
+        android:icon="@drawable/tm_main_icon"
         android:label="ThermalMonitor"
-        android:roundIcon="@mipmap/icon_new_round"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ThermalMonitor"
         tools:targetApi="31">
@@ -46,6 +47,7 @@
         </provider>
 
         <service android:name=".floatWindow.FloatWindowService" />
+
 
 
     </application>

@@ -1,8 +1,11 @@
 package com.example.thermalmonitor
 
 import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.os.Build
 import android.os.Bundle
@@ -11,6 +14,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.example.thermalmonitor.battery.BatteryFragment
@@ -34,6 +38,11 @@ class MainActivity : AppCompatActivity() , FloatWindowCallback {
     //定义一个TabLayout对象，用来显示不同的标签
     private lateinit var tabLayout: TabLayout
 
+    private lateinit var notificationControl: NotificationAndControl
+
+    private lateinit var notificationActionReceiver: NotificationActionReceiver
+    private lateinit var localBroadcastManager: LocalBroadcastManager
+    private lateinit var overviewFragment: OverViewFragment
 
     /**
      * 悬浮窗服务
@@ -60,8 +69,10 @@ class MainActivity : AppCompatActivity() , FloatWindowCallback {
     }
 
 
+
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     @SuppressLint("MissingInflatedId")
-    @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -104,6 +115,19 @@ class MainActivity : AppCompatActivity() , FloatWindowCallback {
         }
 
 
+        // Initialize NotificationAndControl
+        notificationControl = NotificationAndControl(this)
+        notificationControl.createNotification()
+
+        // 初始化 LocalBroadcastManager
+        localBroadcastManager = LocalBroadcastManager.getInstance(this)
+
+        // Attach receiver for notification actions
+        val receiver = NotificationActionReceiver()
+        localBroadcastManager.registerReceiver(NotificationActionReceiver(), IntentFilter("start"))
+        localBroadcastManager.registerReceiver(NotificationActionReceiver(), IntentFilter("stop"))
+
+
 
 
     }
@@ -112,6 +136,8 @@ class MainActivity : AppCompatActivity() , FloatWindowCallback {
 
 
     class SectionsPagerAdapter(activity: AppCompatActivity) : FragmentStateAdapter(activity) {
+
+
 
         //返回总的页面数
         override fun getItemCount(): Int {
@@ -139,12 +165,17 @@ class MainActivity : AppCompatActivity() , FloatWindowCallback {
         // 如果解绑，屏幕旋转后，悬浮窗口会消失
         //unbindService(floatWindowServiceConnection)
         //floatWindowServiceConnected = false
+        // 使用 LocalBroadcastManager 注销广播接收器
+        localBroadcastManager.unregisterReceiver(notificationActionReceiver)
+
         super.onDestroy()
     }
 
 
 
-
+    /**
+     * 展开悬浮窗
+     * */
 
     override fun showFloatWindow() {
         if (floatWindowServiceConnected) {
@@ -155,10 +186,55 @@ class MainActivity : AppCompatActivity() , FloatWindowCallback {
         }
     }
 
+
+    /**
+     * 隐藏悬浮窗
+     * */
     override fun hideFloatWindow() {
         if (floatWindowServiceConnected) {
             floatWindowService.hide()
         }
+    }
+
+
+    // In the NotificationActionReceiver create the logic to call start/stop in OverViewFragment
+    // 声明为静态内部类
+    class NotificationActionReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val action = intent?.action
+            if (action != null) {
+                val mainActivity = context as? MainActivity
+                when (action) {
+                    "start" -> mainActivity?.overviewFragment?.startDataCapture()
+                    "stop" -> mainActivity?.overviewFragment?.stopDataCapture()
+                }
+                // 更新通知按钮状态
+                mainActivity?.notificationControl?.toggleCapture()
+            }
+        }
+    }
+
+    // 调用此方法发送本地广播
+    private fun sendLocalBroadcast(action: String) {
+        val intent = Intent(action)
+        localBroadcastManager.sendBroadcast(intent)
+    }
+
+    fun handleNotificationActionFromReceiver(action: String) {
+        when (action) {
+            "start" -> {
+                // 确保 overviewFragment 已经初始化并且可以被调用
+                if (::overviewFragment.isInitialized) {
+                    overviewFragment.startDataCapture()
+                }
+            }
+            "stop" -> {
+                if (::overviewFragment.isInitialized) {
+                    overviewFragment.stopDataCapture()
+                }
+            }
+        }
+        notificationControl.toggleCapture()
     }
 
 

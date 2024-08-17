@@ -15,7 +15,9 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import com.example.thermalmonitor.MainActivity
 import com.example.thermalmonitor.MyApp
+import com.example.thermalmonitor.NotificationAndControl
 import com.example.thermalmonitor.databinding.FragmentOverviewBinding
 import com.example.thermalmonitor.interfaces.FloatWindowCallback
 
@@ -29,10 +31,13 @@ class OverViewFragment : Fragment() {
 
     private lateinit var viewModel: DataCaptureViewModel
 
+    private lateinit var notificationControl: NotificationAndControl
+
     // 调用接口
     private var callback: FloatWindowCallback? = null
 
-
+    // 使用 lateinit 定义 binding 成员变量
+    private lateinit var binding: FragmentOverviewBinding
 
     @SuppressLint("SetTextI18n")
     override fun onCreateView(
@@ -42,14 +47,13 @@ class OverViewFragment : Fragment() {
 
 
         // Inflate the layout for this fragment
-        val binding = FragmentOverviewBinding.inflate(inflater)
+        binding = FragmentOverviewBinding.inflate(inflater)
         binding.lifecycleOwner = this
 
 
         // 获取Application实例
         val myApp = requireActivity().application as MyApp
         viewModel = myApp.dataCaptureViewModel // 获取DataCaptureViewModel实例
-
 
 
 
@@ -97,6 +101,8 @@ class OverViewFragment : Fragment() {
         // 观察 timer 的变化，并更新界面
         viewModel.timer.observe(viewLifecycleOwner) { timeString ->
             binding.tvTimer.text = timeString
+            // 当需要更新通知时
+            notificationControl.updateNotification(timeString)
         }
 
         // 观察toastMessage用于弹窗提醒用户
@@ -110,6 +116,8 @@ class OverViewFragment : Fragment() {
         }
 
 
+
+
         /**
          * 设置开始按钮的点击事件
          * */
@@ -117,7 +125,8 @@ class OverViewFragment : Fragment() {
             if (!cbBattery.isChecked && !cbThermal.isChecked && !cbSoc.isChecked) {
                 Toast.makeText(requireContext(), "请至少选择一项数据", Toast.LENGTH_SHORT).show()
             } else {
-                viewModel.startDataCapture()
+                //viewModel.startDataCapture()
+                startDataCapture() // 调用公共的开始数据捕获方法
             }
         }
 
@@ -134,7 +143,8 @@ class OverViewFragment : Fragment() {
          * 设置停止按钮的点击事件
          * */
         binding.btnStopAndSave.setOnClickListener {
-            viewModel.stopDataCapture()
+            //viewModel.stopDataCapture()
+            stopDataCapture() // 调用公共的停止数据捕获方法
         }
 
 
@@ -155,6 +165,10 @@ class OverViewFragment : Fragment() {
         return binding.root
 
     }
+
+
+
+
 
 
     // 点击中止按钮后的Dialog
@@ -206,6 +220,9 @@ class OverViewFragment : Fragment() {
 
         // 保持对 Activity 的引用
         callback = context as FloatWindowCallback
+
+        // 初始化 notificationControl
+        notificationControl = NotificationAndControl(context)
     }
 
     /**
@@ -361,6 +378,16 @@ class OverViewFragment : Fragment() {
             }
             .setNegativeButton("取消", null)
             .show()
+    }
+
+    // 定义公共的开始数据捕获方法
+    fun startDataCapture() {
+        viewModel.startDataCapture()
+    }
+
+    // 定义公共的停止数据捕获方法
+    fun stopDataCapture() {
+        viewModel.stopDataCapture()
     }
 
 }
