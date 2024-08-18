@@ -31,9 +31,9 @@ import com.example.thermalmonitor.overview.OverViewFragment
 
 class NotificationAndControl (private val context: Context){
 
-    private val notificationID = 100
+    val notificationID = 100
     private lateinit var notificationManager: NotificationManager
-    private lateinit var notificationBuilder: NotificationCompat.Builder
+    lateinit var notificationBuilder: NotificationCompat.Builder
 
 
     private val viewModel: DataCaptureViewModel
@@ -45,16 +45,14 @@ class NotificationAndControl (private val context: Context){
     }
 
     private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = context.getString(R.string.channel_name) // 渠道名字
-            val descriptionText = context.getString(R.string.channel_description) // 渠道描述
-            val importance = NotificationManager.IMPORTANCE_DEFAULT // 重要性级别
-            val channel = NotificationChannel("channel_id", name, importance).apply {
-                description = descriptionText
-            }
-            // 注册通道
-            notificationManager.createNotificationChannel(channel)
+        val name = context.getString(R.string.channel_name) // 渠道名字
+        val descriptionText = context.getString(R.string.channel_description) // 渠道描述
+        val importance = NotificationManager.IMPORTANCE_DEFAULT // 重要性级别
+        val channel = NotificationChannel("channel_id", name, importance).apply {
+            description = descriptionText
         }
+        // 注册通道
+        notificationManager.createNotificationChannel(channel)
     }
 
 
@@ -110,31 +108,36 @@ class NotificationAndControl (private val context: Context){
 
     //Method to update notification button action
     @SuppressLint("RestrictedApi")
+    //Method to update notification button action
+    // NotificationAndControl 中的 updateNotificationAction 方法
     fun updateNotificationAction() {
-        Log.d("NotificationUpdate", "Is recording: ${viewModel.isRecording}")
-        val actionIntent = Intent(context, MainActivity.NotificationActionReceiver::class.java)
-        val actionPendingIntent: PendingIntent
+        // 清除之前设置的动作
+        notificationBuilder.mActions.clear()
 
+        // 创建一个指向 ThermalMonitorService 的 Intent
+        val actionServiceIntent = Intent(context, ThermalMonitorService::class.java)
+        actionServiceIntent.action = if (viewModel.isRecording) "stop" else "start"
+
+        // 创建一个 PendingIntent，用于唤醒 ThermalMonitorService
+        val actionPendingIntent = PendingIntent.getService(
+            context,
+            if (viewModel.isRecording) 1 else 0, // 使用不同的请求码区分动作
+            actionServiceIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        // 添加动作按钮到通知
         if (viewModel.isRecording) {
-            actionIntent.action = "stop"
-            actionPendingIntent = PendingIntent.getBroadcast(
-                context, 0, actionIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            notificationBuilder.mActions.clear()
             notificationBuilder.addAction(
                 R.drawable.noti_stop, "STOP", actionPendingIntent
             )
         } else {
-            actionIntent.action = "start"
-            actionPendingIntent = PendingIntent.getBroadcast(
-                context, 1, actionIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            notificationBuilder.mActions.clear()
             notificationBuilder.addAction(
                 R.drawable.noti_start, "START", actionPendingIntent
             )
         }
 
+        // 更新通知
         notificationManager.notify(notificationID, notificationBuilder.build())
     }
 

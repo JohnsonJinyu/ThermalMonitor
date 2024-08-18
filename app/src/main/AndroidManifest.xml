@@ -47,6 +47,10 @@
         </provider>
 
         <service android:name=".floatWindow.FloatWindowService" />
+        <service
+            android:name=".ThermalMonitorService"
+            android:exported="false"/>
+
         <receiver android:name=".MainActivity$NotificationActionReceiver"
             android:exported="false">
             <intent-filter>
