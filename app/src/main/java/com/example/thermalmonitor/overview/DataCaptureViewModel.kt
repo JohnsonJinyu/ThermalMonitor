@@ -146,7 +146,8 @@ class DataCaptureViewModel(
         }
         else
         {
-            showToast("正在记录中，请勿重复点击")
+            //showToast("正在记录中，请勿重复点击")
+            Toast.makeText(context,"正在记录中，请勿重复点击",Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -160,7 +161,8 @@ class DataCaptureViewModel(
         if (isRecording) {
             _showAbortDialog.value = Unit  // Unit表示信号
         } else {
-            showToast("未开始记录，请先点击开始按钮")
+            //showToast("未开始记录，请先点击开始按钮")
+            Toast.makeText(context,"未开始记录，请先点击开始按钮",Toast.LENGTH_SHORT).show()
         }
     }
     /**
@@ -209,13 +211,16 @@ class DataCaptureViewModel(
                 timeDataArray = arrayOf()
 
                 // 弹窗提示保存成功以及保存路径
-                showToast("数据保存成功，保存路径：${Environment.DIRECTORY_DOWNLOADS}/ThermalMonitor/$fileName")
+                //showToast("数据保存成功，保存路径：${Environment.DIRECTORY_DOWNLOADS}/ThermalMonitor/$fileName")
+                Toast.makeText(context,"数据保存成功，保存路径：${Environment.DIRECTORY_DOWNLOADS}/ThermalMonitor/$fileName",Toast.LENGTH_SHORT).show()
 
             }
         }
         else
         {
-            showToast("未开始记录，请点击开始按钮")
+            //showToast("未开始记录，请点击开始按钮")
+            Toast.makeText(context,"未开始记录，请点击开始按钮",Toast.LENGTH_SHORT).show()
+
         }
     }
 
