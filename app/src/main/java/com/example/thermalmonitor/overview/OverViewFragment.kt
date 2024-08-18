@@ -2,8 +2,10 @@ package com.example.thermalmonitor.overview
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -15,9 +17,11 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.thermalmonitor.MainActivity
 import com.example.thermalmonitor.MyApp
 import com.example.thermalmonitor.NotificationAndControl
+import com.example.thermalmonitor.R
 import com.example.thermalmonitor.databinding.FragmentOverviewBinding
 import com.example.thermalmonitor.interfaces.FloatWindowCallback
 
@@ -116,6 +120,16 @@ class OverViewFragment : Fragment() {
         }
 
 
+        // 观察 通知栏按钮的开始或停止动作
+
+        viewModel.action.observe(viewLifecycleOwner) { action ->
+            when (action) {
+                "start" -> startDataCapture()
+                "stop" -> stopDataCapture()
+            }
+        }
+
+
 
 
         /**
@@ -162,13 +176,28 @@ class OverViewFragment : Fragment() {
             callback?.hideFloatWindow()
         }
 
+
+
+        // 注册接收器
+        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(dataCaptureReceiver, IntentFilter().apply {
+            addAction("start")
+            addAction("stop")
+        })
+
         return binding.root
 
     }
 
 
 
-
+    private val dataCaptureReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when (intent?.action) {
+                "start" -> startDataCapture()
+                "stop" -> stopDataCapture()
+            }
+        }
+    }
 
 
     // 点击中止按钮后的Dialog
@@ -204,7 +233,11 @@ class OverViewFragment : Fragment() {
     }
 
 
-
+    override fun onDestroy() {
+        super.onDestroy()
+        // 注销接收器
+        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(dataCaptureReceiver)
+    }
 
 
 
@@ -278,6 +311,16 @@ class OverViewFragment : Fragment() {
     }
 
 
+    // 使用新的ActivityResultContracts请求通知权限
+    private val requestNotificationSettingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        // 这里无法确切知道用户是否更改了通知权限设置
+        // 但你可以在这里执行一些如刷新UI的操作
+        Toast.makeText(context, "请确保已开启通知权限", Toast.LENGTH_LONG).show()
+    }
+
+
+
+
 
     /**
      * 检查和申请权限
@@ -288,6 +331,8 @@ class OverViewFragment : Fragment() {
         hasAllPermissions = hasAllPermissions and Settings.canDrawOverlays(requireContext())
         hasAllPermissions = hasAllPermissions and isIgnoringBatteryOptimizations()
         hasAllPermissions = hasAllPermissions and Environment.isExternalStorageManager()
+        // 通知权限
+        hasAllPermissions = hasAllPermissions and Settings.canDrawOverlays(requireContext())
 
         // 如果没有所有需要的权限，显示 AlertDialog
         if (!hasAllPermissions) {
@@ -299,6 +344,7 @@ class OverViewFragment : Fragment() {
                     requestOverlayPermission()
                     requestBatteryOptimizationPermission()
                     requestManageExternalStoragePermission()
+                    requestNotificationPermission()
                 }
                 .setNegativeButton("取消", null)
                 .show()
@@ -333,6 +379,16 @@ class OverViewFragment : Fragment() {
             requestManageExternalStoragePermissionLauncher.launch(intent)
         }
     }
+
+    private fun requestNotificationPermission() {
+        val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+            putExtra(Settings.EXTRA_APP_PACKAGE, requireContext().packageName)
+            putExtra(Settings.EXTRA_CHANNEL_ID, requireContext().applicationInfo.uid)
+            //putExtra(Settings.EXTRA_APP_NAME, requireContext().getString(R.string.app_name))
+        }
+        requestNotificationSettingsLauncher.launch(intent)
+    }
+
 
 
     private fun isIgnoringBatteryOptimizations(): Boolean {
@@ -380,14 +436,29 @@ class OverViewFragment : Fragment() {
             .show()
     }
 
+    private fun showNotificationRationaleDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("需要通知权限")
+            .setMessage("此应用需要通知权限便于控制数据抓取")
+            .setPositiveButton("设置") { _, _ ->
+                // 引导用户再次打开设置页面
+                val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS, Uri.parse("package:${requireContext().packageName}"))
+                requestOverlayPermissionLauncher.launch(intent)
+            }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
     // 定义公共的开始数据捕获方法
     fun startDataCapture() {
         viewModel.startDataCapture()
+        notificationControl.updateNotificationAction()
     }
 
     // 定义公共的停止数据捕获方法
     fun stopDataCapture() {
         viewModel.stopDataCapture()
+        notificationControl.updateNotificationAction()
     }
 
 }

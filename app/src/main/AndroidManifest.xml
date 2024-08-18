@@ -47,6 +47,13 @@
         </provider>
 
         <service android:name=".floatWindow.FloatWindowService" />
+        <receiver android:name=".MainActivity$NotificationActionReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="start"/>
+                <action android:name="stop"/>
+            </intent-filter>
+        </receiver>
 
 
 

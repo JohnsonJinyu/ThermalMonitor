@@ -1,10 +1,15 @@
 package com.example.thermalmonitor
 
+import android.annotation.SuppressLint
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.example.thermalmonitor.overview.DataCaptureViewModel
 import com.example.thermalmonitor.overview.OverViewFragment
 
 
@@ -29,15 +34,37 @@ class NotificationAndControl (private val context: Context){
     private val notificationID = 100
     private lateinit var notificationManager: NotificationManager
     private lateinit var notificationBuilder: NotificationCompat.Builder
-    private var isCapturingData = false // track the capture state
+
+
+    private val viewModel: DataCaptureViewModel
+
+
+    init {
+        val myApp = context.applicationContext as MyApp
+        viewModel = myApp.dataCaptureViewModel
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = context.getString(R.string.channel_name) // 渠道名字
+            val descriptionText = context.getString(R.string.channel_description) // 渠道描述
+            val importance = NotificationManager.IMPORTANCE_DEFAULT // 重要性级别
+            val channel = NotificationChannel("channel_id", name, importance).apply {
+                description = descriptionText
+            }
+            // 注册通道
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
 
     //Method to create and show notification
     fun createNotification() {
         notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-
-
+        // 确保通知渠道已创建
+        createNotificationChannel()
 
         //Create initial notification
         notificationBuilder = NotificationCompat.Builder(context, "channel_id")
@@ -61,6 +88,9 @@ class NotificationAndControl (private val context: Context){
         ensureInitialized()
         // 使用现有实例更新内容文本
         notificationBuilder.setContentText(timeString)
+
+        updateNotificationAction()  // 确保动作是最新的
+
         // 通知更新
         notificationManager.notify(notificationID, notificationBuilder.build())
     }
@@ -79,35 +109,40 @@ class NotificationAndControl (private val context: Context){
     }
 
     //Method to update notification button action
-    private fun updateNotificationAction() {
-        val startIntent = Intent(context, MainActivity.NotificationActionReceiver::class.java).setAction("start")
-        val startPendingIntent = PendingIntent.getBroadcast(
-            context, 0, startIntent, PendingIntent.FLAG_IMMUTABLE
-        )
+    @SuppressLint("RestrictedApi")
+    fun updateNotificationAction() {
+        Log.d("NotificationUpdate", "Is recording: ${viewModel.isRecording}")
+        val actionIntent = Intent(context, MainActivity.NotificationActionReceiver::class.java)
+        val actionPendingIntent: PendingIntent
 
-        val stopIntent = Intent(context, MainActivity.NotificationActionReceiver::class.java).setAction("stop")
-        val stopPendingIntent = PendingIntent.getBroadcast(
-            context, 1, stopIntent, PendingIntent.FLAG_IMMUTABLE
-        )
-
-        notificationBuilder.addAction(
-            R.drawable.noti_start, "START", startPendingIntent
-        )
-        notificationBuilder.addAction(
-            R.drawable.noti_stop, "STOP", stopPendingIntent
-        )
+        if (viewModel.isRecording) {
+            actionIntent.action = "stop"
+            actionPendingIntent = PendingIntent.getBroadcast(
+                context, 0, actionIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            notificationBuilder.mActions.clear()
+            notificationBuilder.addAction(
+                R.drawable.noti_stop, "STOP", actionPendingIntent
+            )
+        } else {
+            actionIntent.action = "start"
+            actionPendingIntent = PendingIntent.getBroadcast(
+                context, 1, actionIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            notificationBuilder.mActions.clear()
+            notificationBuilder.addAction(
+                R.drawable.noti_start, "START", actionPendingIntent
+            )
+        }
 
         notificationManager.notify(notificationID, notificationBuilder.build())
     }
 
 
-    //Public method to toggle capture state
-    fun toggleCapture(){
-        isCapturingData = !isCapturingData
-        ensureInitialized()
-        updateNotificationAction()
-        notificationManager.notify(notificationID,notificationBuilder.build())
-    }
+
+
+
+
 
     private fun ensureInitialized() {
         if (!this::notificationBuilder.isInitialized) {

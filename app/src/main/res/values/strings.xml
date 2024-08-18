@@ -17,7 +17,8 @@
     <string name="checkBoxString_Battery">电池</string>
     <string name="checkBoxString_Temperature">温度</string>
     <string name="checkBoxString_Soc">Soc</string>
-
+    <string name="channel_name">thermalMonitor控制通知</string>
+    <string name="channel_description">thermalMonitor_notification_channel</string>
 
 
 </resources>
