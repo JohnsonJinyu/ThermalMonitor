@@ -92,7 +92,7 @@ class ThermalMonitorService : Service(), LifecycleOwner {
         stopForegroundService()
     }
 
-    // 待确认 ii
+    // 待确认 ii-1
     override val lifecycle: Lifecycle
         get() = TODO("Not yet implemented")
 }
