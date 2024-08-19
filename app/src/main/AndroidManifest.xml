@@ -11,6 +11,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+
 
 
     <application
@@ -46,18 +48,16 @@
                 android:resource="@xml/provider_paths" />
         </provider>
 
-        <service android:name=".floatWindow.FloatWindowService" />
-        <service
-            android:name=".ThermalMonitorService"
-            android:exported="false"/>
+        <service android:name=".floatWindow.FloatWindowService" >
 
-        <receiver android:name=".MainActivity$NotificationActionReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="start"/>
-                <action android:name="stop"/>
-            </intent-filter>
-        </receiver>
+        </service>
+
+        <service android:name=".ThermalMonitorService"
+        android:exported="false"/>
+
+
+
+
 
 
 

@@ -44,10 +44,11 @@ class NotificationAndControl (private val context: Context){
         viewModel = myApp.dataCaptureViewModel
     }
 
+    @SuppressLint("WrongConstant")
     private fun createNotificationChannel() {
         val name = context.getString(R.string.channel_name) // 渠道名字
         val descriptionText = context.getString(R.string.channel_description) // 渠道描述
-        val importance = NotificationManager.IMPORTANCE_DEFAULT // 重要性级别
+        val importance = NotificationManager.IMPORTANCE_MAX // 重要性级别
         val channel = NotificationChannel("channel_id", name, importance).apply {
             description = descriptionText
         }

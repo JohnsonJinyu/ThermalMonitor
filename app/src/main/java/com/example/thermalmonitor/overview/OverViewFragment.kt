@@ -106,7 +106,7 @@ class OverViewFragment : Fragment() {
         viewModel.timer.observe(viewLifecycleOwner) { timeString ->
             binding.tvTimer.text = timeString
             // 当需要更新通知时
-            notificationControl.updateNotification(timeString)
+            //notificationControl.updateNotification(timeString)
         }
 
         // 观察toastMessage用于弹窗提醒用户

@@ -5,9 +5,12 @@ import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import androidx.core.app.NotificationManagerCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Observer
 import com.example.thermalmonitor.overview.DataCaptureViewModel
 
-class ThermalMonitorService : Service() {
+class ThermalMonitorService : Service(), LifecycleOwner {
 
     companion object {
         const val ACTION_START_FOREGROUND = "com.example.thermalmonitor.START_FOREGROUND"
@@ -56,11 +59,16 @@ class ThermalMonitorService : Service() {
 
     @SuppressLint("ForegroundServiceType")
     private fun startForegroundService() {
-        // 确保在创建 NotificationAndControl 之前调用 createNotificationChannel
         notificationAndControl = NotificationAndControl(this)
         notificationAndControl.createNotification()
-        // 启动前台服务
         startForeground(notificationAndControl.notificationID, notificationAndControl.notificationBuilder.build())
+
+        viewModel.timer.observe(this, Observer { timeString ->
+            // 直接在服务中更新通知
+            //updateNotificationTime(timeString)
+            // 当需要更新通知时
+            notificationAndControl.updateNotification(timeString)
+        })
     }
 
     private fun stopForegroundService() {
@@ -83,4 +91,7 @@ class ThermalMonitorService : Service() {
         // 停止前台服务
         stopForegroundService()
     }
+
+    override val lifecycle: Lifecycle
+        get() = TODO("Not yet implemented")
 }
