@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity(), FloatWindowCallback {
     //定义一个TabLayout对象，用来显示不同的标签
     private lateinit var tabLayout: TabLayout
 
-    private lateinit var notificationControl: NotificationAndControl
+    //private lateinit var notificationControl: NotificationAndControl
 
     // 声明广播接收器
     //private lateinit var notificationActionReceiver: NotificationActionReceiver
@@ -135,16 +135,7 @@ class MainActivity : AppCompatActivity(), FloatWindowCallback {
             addAction("start")
             addAction("stop")
         }
-        //registerReceiver(notificationActionReceiver, filter, RECEIVER_NOT_EXPORTED)
 
-        // 启动前台服务
-        /*val startServiceIntent = Intent(this, ThermalMonitorService::class.java).apply {
-            action = ThermalMonitorService.ACTION_START_FOREGROUND
-        }
-        startService(startServiceIntent)*/
-        // 绑定服务
-        val serviceIntent = Intent(this, ThermalMonitorService::class.java)
-        bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
 
 
     }
@@ -210,46 +201,7 @@ class MainActivity : AppCompatActivity(), FloatWindowCallback {
     }
 
 
-    // In the NotificationActionReceiver create the logic to call start/stop in OverViewFragment
 
-/*    class NotificationActionReceiver : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            val action = intent?.action
-            Log.d("NotificationActionReceiver", "Action Received: $action")
-            val appContext = context?.applicationContext as MyApp
-            val viewModel = appContext.dataCaptureViewModel
-            //Log.d("NotificationActionReceiver", "Is recording before action: ${viewModel.isRecording}")
-
-            when (action) {
-                "start" -> {
-                    //viewModel.startDataCapture()
-                    viewModel.action.postValue("start")
-                    //Log.d("NotificationActionReceiver", "Started Data Capture")
-                }
-
-                "stop" -> {
-                    //viewModel.stopDataCapture()
-                    viewModel.action.postValue("stop")
-                    //Log.d("NotificationActionReceiver", "Stopped Data Capture")
-                }
-            }
-
-            //Log.d("NotificationActionReceiver", "Is recording after action: ${viewModel.isRecording}")
-        }
-    }*/
-
-
-    private val serviceConnection = object : ServiceConnection {
-        override fun onServiceConnected(componentName: ComponentName, binder: IBinder) {
-            val localBinder = binder as ThermalMonitorService.LocalBinder
-            thermalMonitorService = localBinder.getService()
-            isBound = true
-        }
-
-        override fun onServiceDisconnected(componentName: ComponentName) {
-            isBound = false
-        }
-    }
 
 
 }

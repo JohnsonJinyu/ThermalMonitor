@@ -18,10 +18,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.example.thermalmonitor.MainActivity
 import com.example.thermalmonitor.MyApp
-import com.example.thermalmonitor.NotificationAndControl
-import com.example.thermalmonitor.R
 import com.example.thermalmonitor.databinding.FragmentOverviewBinding
 import com.example.thermalmonitor.interfaces.FloatWindowCallback
 
@@ -35,7 +32,6 @@ class OverViewFragment : Fragment() {
 
     private lateinit var viewModel: DataCaptureViewModel
 
-    private lateinit var notificationControl: NotificationAndControl
 
     // 调用接口
     private var callback: FloatWindowCallback? = null
@@ -254,8 +250,7 @@ class OverViewFragment : Fragment() {
         // 保持对 Activity 的引用
         callback = context as FloatWindowCallback
 
-        // 初始化 notificationControl
-        notificationControl = NotificationAndControl(context)
+
     }
 
     /**
@@ -452,13 +447,13 @@ class OverViewFragment : Fragment() {
     // 定义公共的开始数据捕获方法
     fun startDataCapture() {
         viewModel.startDataCapture()
-        notificationControl.updateNotificationAction()
+        //notificationControl.updateNotificationAction()
     }
 
     // 定义公共的停止数据捕获方法
     fun stopDataCapture() {
         viewModel.stopDataCapture()
-        notificationControl.updateNotificationAction()
+        //notificationControl.updateNotificationAction()
     }
 
 }
