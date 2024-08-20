@@ -40,17 +40,7 @@ class MainActivity : AppCompatActivity(), FloatWindowCallback {
     //定义一个TabLayout对象，用来显示不同的标签
     private lateinit var tabLayout: TabLayout
 
-    //private lateinit var notificationControl: NotificationAndControl
 
-    // 声明广播接收器
-    //private lateinit var notificationActionReceiver: NotificationActionReceiver
-
-    private lateinit var localBroadcastManager: LocalBroadcastManager
-    private lateinit var overviewFragment: OverViewFragment
-
-
-    private lateinit var thermalMonitorService: ThermalMonitorService
-    private var isBound: Boolean = false
 
     /**
      * 悬浮窗服务
@@ -136,6 +126,10 @@ class MainActivity : AppCompatActivity(), FloatWindowCallback {
             addAction("stop")
         }
 
+
+
+        // 启动服务
+        startService(Intent(this, ThermalMonitorService::class.java))
 
 
     }
