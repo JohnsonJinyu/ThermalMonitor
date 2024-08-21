@@ -1,35 +1,60 @@
-package com.example.thermalmonitor
+package com.example.thermalmonitor.notification
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.Observer
+import com.example.thermalmonitor.MainActivity
+import com.example.thermalmonitor.MyApp
+import com.example.thermalmonitor.R
 import com.example.thermalmonitor.overview.DataCaptureViewModel
 
 class ThermalMonitorService : LifecycleService() {
 
 
     // 定义一个常量用来表示
-    private var isRecording = false
+    //private var isRecording = false
     private lateinit var viewModel: DataCaptureViewModel
-
-
+    private val START_REQUEST_CODE = 2
+    private val STOP_REQUEST_CODE = 3
+    private lateinit var notification : Notification
     /**
      * 这个服务类的onCreate方法
      * */
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate() {
         super.onCreate()
+        Log.d("ThermalMonitorService", "Service is being created.") // 添加日志输出
         createNotificationChannel()
+
 
         // 初始化 viewModel
         viewModel = (applicationContext as MyApp).dataCaptureViewModel
+
         // 开始观察 LiveData
         observeElapsedTime()
+
+
+
+        // 动态注册广播接收器
+        val filterStart = IntentFilter("START")
+        registerReceiver(ActionStartReceiver(),filterStart, RECEIVER_NOT_EXPORTED)
+        val filterStop = IntentFilter("STOP")
+        registerReceiver(ActionStopReceiver(),filterStop, RECEIVER_NOT_EXPORTED)
+
+
+
+
     }
 
 
@@ -60,7 +85,48 @@ class ThermalMonitorService : LifecycleService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
         // 调用创建通知渠道的方法
-        createNotificationChannel()
+        Log.d("ThermalMonitorService", "Service received start command.") // 添加日志输出
+        //createNotificationChannel()
+
+        // 创建通知
+        createNotification()
+
+        // 将当前服务设置为前台服务
+        startForeground(1,notification)
+
+        //示如果服务因为内存不足而被系统销毁，系统将尝试重新创建服务
+        return START_STICKY
+
+    }
+
+
+
+
+
+    private fun createNotification(){
+
+        /**
+         * 创建触发intentStart的PendingIntent
+         * */
+        val intentStart = Intent("START")
+        val pendingIntentStart: PendingIntent = PendingIntent.getBroadcast(
+            this,
+            2, // 请求码
+            intentStart,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        /**
+         * 创建触发intentStop的PendingIntent
+         * */
+        val intentStop = Intent("STOP")
+        val pendingIntentStop: PendingIntent = PendingIntent.getBroadcast(
+            this,
+            3, // 请求码
+            intentStop,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
 
         /**
          * 定义并创建通知
@@ -69,19 +135,9 @@ class ThermalMonitorService : LifecycleService() {
         // 第一个参数 this 是当前的上下文（服务），第二个参数 "music_channel_id" 是之前创建的通知渠道的ID。
         val builder = NotificationCompat.Builder(this, "channel_id_1")
 
-        // 根据当前状态设置按钮图标和文本
-        val action = if (isRecording) "STOP" else "START"
-        builder.addAction(
-            NotificationCompat.Action(
-                if (isRecording) R.drawable.noti_stop else R.drawable.noti_start,
-                action,
-                createActionPendingIntent(action)
-            )
-        )
-
 
         // 设置通知的内容
-        val notification = builder
+         notification = builder
             .setContentTitle("ThermalMonitor is running")   // 设置通知标题
             .setContentText("00:00:00")             // 设置通知内容
             .setSmallIcon(R.drawable.tm_main_icon)  // 设置通知的小图标
@@ -93,33 +149,13 @@ class ThermalMonitorService : LifecycleService() {
             )      // 设置通知的意图，即点击通知后会执行的动作
             .setVibrate(null)                       // 设置禁用震动
             .setAutoCancel(false)                   // 设置用户点击后不会自动取消
+            .addAction(R.drawable.noti_start,"START",pendingIntentStart)
+            .addAction(R.drawable.noti_stop,"STOP",pendingIntentStop)
+
             .build()                                // 调用 build 方法后，会根据之前的设置生成一个 Notification 对象
-
-        //startForeground 方法用于将服务置于前台状态，并显示传入的通知。
-        // 第一个参数 1 是通知的ID，第二个参数是之前构建的通知对象
-        startForeground(1, notification)
+        Log.d("create notification state","Create Success")
 
 
-
-        //示如果服务因为内存不足而被系统销毁，系统将尝试重新创建服务
-        return START_STICKY
-
-    }
-
-
-    /**
-     * START 和 STOP 共享的Intent
-     * */
-    private fun createActionPendingIntent(action: String): PendingIntent? {
-        return PendingIntent.getBroadcast(
-            this, // 当前的上下文
-            action.hashCode(), // 使用动作的哈希值作为请求码
-            Intent(this, ControlReceiver::class.java).apply {
-                // 使用动作名称作为 Intent 的 action
-                this.action = action
-            },
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
     }
 
 
@@ -127,7 +163,7 @@ class ThermalMonitorService : LifecycleService() {
     /**
      * 停止前台服务，当服务不再需要运行在前台的时候
      * */
-    fun stopForeground() {
+    private fun stopForeground() {
         stopForeground(true)
         stopSelf()
     }
@@ -138,49 +174,10 @@ class ThermalMonitorService : LifecycleService() {
      * */
 
     // 根据当前状态更新通知
-    fun updateNotification() {
-        val action = if (isRecording) "STOP" else "START"
-        val actionIcon = if (isRecording) R.drawable.noti_stop else R.drawable.noti_start
-        val actionTitle = if (isRecording) "STOP" else "START"
-
-        val builder = NotificationCompat.Builder(this, "channel_id_1")
-            // ... 现有设置 ...
-            .addAction(
-                NotificationCompat.Action(
-                    actionIcon,
-                    actionTitle,
-                    createActionPendingIntent(action)
-                )
-            )
-
-        val notification = builder.build()
-        startForeground(1, notification) // 更新前台服务的通知
-    }
 
 
-    // ControlReceiver 作为内部类
-    inner class ControlReceiver : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            val action = intent.action
-            when (action) {
-                "START" -> {
-                    isRecording = true // 标记为正在录制
-                    // 触发开始录制的逻辑
-                    // 例如，您可以在这里调用一个方法来启动数据捕获
-                    startCapturingData()
-                }
 
-                "STOP" -> {
-                    isRecording = false // 标记为停止录制
-                    // 触发停止录制的逻辑
-                    // 例如，您可以在这里调用一个方法来停止数据捕获
-                    stopCapturingData()
-                }
-            }
-            // 更新通知以反映新的状态
-            updateNotification()
-        }
-    }
+
 
 
     // 开始捕获数据的方法
@@ -206,6 +203,8 @@ class ThermalMonitorService : LifecycleService() {
         })
     }
 
+
+
     // 更新通知内容的方法
     private fun updateNotificationContent(elapsedTime: String) {
         val builder = NotificationCompat.Builder(this, "channel_id_1")
@@ -230,10 +229,32 @@ class ThermalMonitorService : LifecycleService() {
 
     override fun onDestroy() {
         super.onDestroy()
+
+        stopForeground()
         // 取消 LiveData 观察
         viewModel.timer.removeObservers(this)
     }
 
 
+
+    class ActionStartReceiver: BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if ("START" == intent.action ){
+                // 处理Start的逻辑
+                Log.d("ActionStartReceiver","开始按钮已经按下")
+            }
+        }
+    }
+
+    class ActionStopReceiver :BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if ("STOP" ==intent.action ){
+                // 处理Stop的逻辑
+                Log.d("ActionStopReceiver","停止按钮已经按下")
+
+            }
+        }
+
+    }
 }
 

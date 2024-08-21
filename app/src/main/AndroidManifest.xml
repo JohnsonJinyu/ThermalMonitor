@@ -54,11 +54,23 @@
         </service>
 
         <service
-            android:name=".ThermalMonitorService"
+            android:name=".notification.ThermalMonitorService"
             android:foregroundServiceType="dataSync"
             android:exported="false"/>
 
+        <receiver android:name=".notification.ThermalMonitorService$ActionStartReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="START" />
+            </intent-filter>
+        </receiver>
 
+        <receiver android:name=".notification.ThermalMonitorService$ActionStopReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="STOP" />
+            </intent-filter>
+        </receiver>
 
 
 

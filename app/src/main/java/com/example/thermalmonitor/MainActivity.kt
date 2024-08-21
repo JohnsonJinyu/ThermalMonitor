@@ -1,9 +1,7 @@
 package com.example.thermalmonitor
 
 import android.annotation.SuppressLint
-import android.content.BroadcastReceiver
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
@@ -15,13 +13,13 @@ import android.util.SparseArray
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.example.thermalmonitor.battery.BatteryFragment
 import com.example.thermalmonitor.filesList.FilesListFragment
 import com.example.thermalmonitor.floatWindow.FloatWindowService
 import com.example.thermalmonitor.interfaces.FloatWindowCallback
+import com.example.thermalmonitor.notification.ThermalMonitorService
 import com.example.thermalmonitor.overview.OverViewFragment
 import com.example.thermalmonitor.soc.SocFragment
 import com.example.thermalmonitor.thermal.ThermalFragment
@@ -110,15 +108,6 @@ class MainActivity : AppCompatActivity(), FloatWindowCallback {
         }
 
 
-        // Initialize NotificationAndControl
-        //notificationControl = NotificationAndControl(this)
-        //notificationControl.createNotification()
-
-        // 初始化 LocalBroadcastManager
-        //localBroadcastManager = LocalBroadcastManager.getInstance(this)
-
-        // 初始化广播接收器
-        //notificationActionReceiver = NotificationActionReceiver()
 
         // 设置IntentFilter和注册广播
         val filter = IntentFilter().apply {
@@ -130,8 +119,14 @@ class MainActivity : AppCompatActivity(), FloatWindowCallback {
 
         // 启动服务
         startService(Intent(this, ThermalMonitorService::class.java))
+        Log.d("MainServiceReport","MainActivity start service success")
 
+    }
 
+    override fun onStart() {
+        super.onStart()
+        // start service
+        //startService(Intent(this, ThermalMonitorService::class.java))
     }
 
 
@@ -153,9 +148,7 @@ class MainActivity : AppCompatActivity(), FloatWindowCallback {
             return fragment
         }
 
-        fun getFragment(position: Int): Fragment? {
-            return fragmentsMap.get(position)
-        }
+
     }
 
 
