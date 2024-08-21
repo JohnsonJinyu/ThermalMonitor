@@ -18,6 +18,7 @@ import com.example.thermalmonitor.MainActivity
 import com.example.thermalmonitor.MyApp
 import com.example.thermalmonitor.R
 import com.example.thermalmonitor.overview.DataCaptureViewModel
+import timber.log.Timber
 
 class ThermalMonitorService : LifecycleService() {
 
@@ -82,12 +83,14 @@ class ThermalMonitorService : LifecycleService() {
      * 前台服务控制，在service的onStartCommand中设置前台服务
      * */
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
         // 调用创建通知渠道的方法
         Log.d("ThermalMonitorService", "Service received start command.") // 添加日志输出
         //createNotificationChannel()
-
+        // 注册广播接收器
+        registerReceivers();
         // 创建通知
         createNotification()
 
@@ -99,7 +102,13 @@ class ThermalMonitorService : LifecycleService() {
 
     }
 
-
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun  registerReceivers() {
+        val filterStart = IntentFilter("START")
+        registerReceiver(ActionStartReceiver(), filterStart, RECEIVER_NOT_EXPORTED)
+        val filterStop = IntentFilter("STOP")
+        registerReceiver(ActionStopReceiver(), filterStop, RECEIVER_NOT_EXPORTED)
+    }
 
 
 
@@ -108,12 +117,14 @@ class ThermalMonitorService : LifecycleService() {
         /**
          * 创建触发intentStart的PendingIntent
          * */
-        val intentStart = Intent("START")
-        val pendingIntentStart: PendingIntent = PendingIntent.getBroadcast(
+        val intentStart = Intent(this, ThermalMonitorService::class.java).apply {
+            action = "START"
+        }
+        val pendingIntentStart = PendingIntent.getForegroundService(
             this,
-            2, // 请求码
+            START_REQUEST_CODE,
             intentStart,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_IMMUTABLE
         )
 
         /**
@@ -207,6 +218,8 @@ class ThermalMonitorService : LifecycleService() {
 
     // 更新通知内容的方法
     private fun updateNotificationContent(elapsedTime: String) {
+        val notificationManager = getSystemService(NotificationManager::class.java)
+
         val builder = NotificationCompat.Builder(this, "channel_id_1")
             .setContentTitle("ThermalMonitor is running")
             .setContentText(elapsedTime)
@@ -222,6 +235,8 @@ class ThermalMonitorService : LifecycleService() {
 
         val notification = builder.build()
         startForeground(1, notification)
+
+        notificationManager.notify(1, builder.build())
     }
 
 
@@ -233,24 +248,30 @@ class ThermalMonitorService : LifecycleService() {
         stopForeground()
         // 取消 LiveData 观察
         viewModel.timer.removeObservers(this)
+
+        // 取消注册广播接收器
+        unregisterReceiver(ActionStartReceiver())
+        unregisterReceiver(ActionStopReceiver())
     }
 
 
 
-    class ActionStartReceiver: BroadcastReceiver() {
+    inner class ActionStartReceiver: BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if ("START" == intent.action ){
                 // 处理Start的逻辑
+                viewModel.startDataCapture()
                 Log.d("ActionStartReceiver","开始按钮已经按下")
             }
         }
     }
 
-    class ActionStopReceiver :BroadcastReceiver() {
+    inner class ActionStopReceiver :BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if ("STOP" ==intent.action ){
                 // 处理Stop的逻辑
-                Log.d("ActionStopReceiver","停止按钮已经按下")
+                viewModel.stopDataCapture()
+                Timber.tag("ActionStopReceiver").d("停止按钮已经按下")
 
             }
         }
