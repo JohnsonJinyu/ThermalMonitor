@@ -53,22 +53,22 @@ class ThermalMonitorService : Service() {
         // 将服务设置为前台服务
         startForeground(startId, notification)
 
+
+
         // 返回 START_STICKY，表示服务被系统杀死后会尝试重新创建
         return START_STICKY
     }
 
     // 创建通知渠道
     private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = getString(R.string.channel_name) // 渠道名称
-            var description = getString(R.string.channel_description) // 渠道描述
-            val importance = NotificationManager.IMPORTANCE_LOW
+        val name = getString(R.string.channel_name) // 渠道名称
+        var description = getString(R.string.channel_description) // 渠道描述
+        val importance = NotificationManager.IMPORTANCE_LOW
 
-            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
-                description = description
-            }
-            notificationManager.createNotificationChannel(channel)
+        val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+            description = description
         }
+        notificationManager.createNotificationChannel(channel)
     }
 
     // 创建通知
@@ -88,7 +88,7 @@ class ThermalMonitorService : Service() {
 
         // 创建一个PendingIntent ，用于通知中的停止按钮
         val intentStop = Intent(this,MainActivity::class.java).apply {
-            action = "com.example.thermalmontor.ACTION_STOP"
+            action = "com.example.thermalmonitor.ACTION_STOP"
         }
         val pendingIntentStop = PendingIntent.getBroadcast(
             this,1,intentStop,
@@ -111,19 +111,7 @@ class ThermalMonitorService : Service() {
     }
 
 
-    // 在您的服务或 BroadcastReceiver 中处理按钮点击事件
-    fun onReceive(context: Context, intent: Intent?){
-        if (intent != null) {
-            when(intent.action){
-                "com.example.thermalmonitor.ACTION_START" ->{
 
-                }
-                "com.example.thermalmonitor.ACTION_STOP" ->{
-
-                }
-            }
-        }
-    }
 
     // onDestroy() 在服务被销毁时调用
     override fun onDestroy() {

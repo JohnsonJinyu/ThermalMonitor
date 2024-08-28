@@ -58,17 +58,12 @@
             android:foregroundServiceType="dataSync"
             android:exported="false"/>
 
-        <receiver android:name=".notification.ThermalMonitorService$ActionStartReceiver"
+        <receiver android:name=".notification.StartStopReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="START" />
-            </intent-filter>
-        </receiver>
-
-        <receiver android:name=".notification.ThermalMonitorService$ActionStopReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="STOP" />
+                <action android:name="com.example.thermalmonitor.ACTION_START" />
+                <action android:name="com.example.thermalmonitor.ACTION_STOP" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
 
