@@ -4,278 +4,133 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.content.BroadcastReceiver
+import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.os.Build
+import android.os.IBinder
 import android.util.Log
-import androidx.annotation.RequiresApi
-import androidx.core.app.NotificationCompat
-import androidx.lifecycle.LifecycleService
-import androidx.lifecycle.Observer
 import com.example.thermalmonitor.MainActivity
-import com.example.thermalmonitor.MyApp
 import com.example.thermalmonitor.R
-import com.example.thermalmonitor.overview.DataCaptureViewModel
-import timber.log.Timber
 
-class ThermalMonitorService : LifecycleService() {
+class ThermalMonitorService : Service() {
 
 
-    // 定义一个常量用来表示
-    //private var isRecording = false
-    private lateinit var viewModel: DataCaptureViewModel
-    private val START_REQUEST_CODE = 2
-    private val STOP_REQUEST_CODE = 3
-    private lateinit var notification : Notification
-    /**
-     * 这个服务类的onCreate方法
-     * */
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    companion object {
+        const val CHANNEL_ID = "my_channel_01" // 通知渠道ID
+    }
+
+    private lateinit var notificationManager: NotificationManager
+
+
+    // onCreate() 在服务首次创建时调用
     override fun onCreate() {
         super.onCreate()
-        Log.d("ThermalMonitorService", "Service is being created.") // 添加日志输出
+        Log.i("MyForegroundService", "Service created")
+        // 初始化服务所需的资源
+        notificationManager = getSystemService(NotificationManager::class.java)
+    }
+
+
+
+    // onBind() 用于返回服务的通信组件，对于前台服务通常返回null
+    override fun onBind(p0: Intent?): IBinder? {
+        TODO("Not yet implemented")
+    }
+
+
+    // onStartCommand() 在服务启动时调用，用于处理启动请求
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+
+        Log.i("MyForegroundService", "Service received start id $startId: $intent")
+
+        // 创建通知渠道，适用于 Android O（API 级别 26）及以上版本
         createNotificationChannel()
 
-
-        // 初始化 viewModel
-        viewModel = (applicationContext as MyApp).dataCaptureViewModel
-
-        // 开始观察 LiveData
-        observeElapsedTime()
-
-
-
-        // 动态注册广播接收器
-        val filterStart = IntentFilter("START")
-        registerReceiver(ActionStartReceiver(),filterStart, RECEIVER_NOT_EXPORTED)
-        val filterStop = IntentFilter("STOP")
-        registerReceiver(ActionStopReceiver(),filterStop, RECEIVER_NOT_EXPORTED)
-
-
-
-
-    }
-
-
-    /**
-     * 创建通知渠道的方法,在`Service`的`onCreate`方法中调用
-     * */
-
-    private fun createNotificationChannel() {
-
-        val channel = NotificationChannel(
-            "channel_id_1",
-            "normal notification",
-            NotificationManager.IMPORTANCE_HIGH
-        )
-
-        channel.description = "used for monitor and control capture data "
-
-        val notificationManager = getSystemService(NotificationManager::class.java)
-
-        notificationManager.createNotificationChannel(channel)
-    }
-
-
-    /**
-     * 前台服务控制，在service的onStartCommand中设置前台服务
-     * */
-
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        super.onStartCommand(intent, flags, startId)
-        // 调用创建通知渠道的方法
-        Log.d("ThermalMonitorService", "Service received start command.") // 添加日志输出
-        //createNotificationChannel()
-        // 注册广播接收器
-        registerReceivers();
         // 创建通知
-        createNotification()
+        val notification = createNotification()
 
-        // 将当前服务设置为前台服务
-        startForeground(1,notification)
+        // 将服务设置为前台服务
+        startForeground(startId, notification)
 
-        //示如果服务因为内存不足而被系统销毁，系统将尝试重新创建服务
+        // 返回 START_STICKY，表示服务被系统杀死后会尝试重新创建
         return START_STICKY
-
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    private fun  registerReceivers() {
-        val filterStart = IntentFilter("START")
-        registerReceiver(ActionStartReceiver(), filterStart, RECEIVER_NOT_EXPORTED)
-        val filterStop = IntentFilter("STOP")
-        registerReceiver(ActionStopReceiver(), filterStop, RECEIVER_NOT_EXPORTED)
-    }
+    // 创建通知渠道
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = getString(R.string.channel_name) // 渠道名称
+            var description = getString(R.string.channel_description) // 渠道描述
+            val importance = NotificationManager.IMPORTANCE_LOW
 
-
-
-    private fun createNotification(){
-
-        /**
-         * 创建触发intentStart的PendingIntent
-         * */
-        val intentStart = Intent(this, ThermalMonitorService::class.java).apply {
-            action = "START"
+            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+                description = description
+            }
+            notificationManager.createNotificationChannel(channel)
         }
-        val pendingIntentStart = PendingIntent.getForegroundService(
-            this,
-            START_REQUEST_CODE,
-            intentStart,
-            PendingIntent.FLAG_IMMUTABLE
+    }
+
+    // 创建通知
+    private fun createNotification(): Notification {
+        // 创建一个PendingIntent，点击通知时将启动MainActivity
+        val intent = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+
+        // 创建一个PendingIntent,用于通知中的开始按钮
+        val intentStart = Intent(this,MainActivity::class.java).apply {
+            action = "com.example.thermalmonitor.ACTION_START"
+        }
+        val pendingIntentStart = PendingIntent.getBroadcast(
+            this, 0, intentStart,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        /**
-         * 创建触发intentStop的PendingIntent
-         * */
-        val intentStop = Intent("STOP")
-        val pendingIntentStop: PendingIntent = PendingIntent.getBroadcast(
-            this,
-            3, // 请求码
-            intentStop,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        // 创建一个PendingIntent ，用于通知中的停止按钮
+        val intentStop = Intent(this,MainActivity::class.java).apply {
+            action = "com.example.thermalmontor.ACTION_STOP"
+        }
+        val pendingIntentStop = PendingIntent.getBroadcast(
+            this,1,intentStop,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
 
-        /**
-         * 定义并创建通知
-         * */
-        // 创建NotificationCompat.Builder对象，这里使用NotificationCompat.Builder 类创建一个通知构建器实例。
-        // 第一个参数 this 是当前的上下文（服务），第二个参数 "music_channel_id" 是之前创建的通知渠道的ID。
-        val builder = NotificationCompat.Builder(this, "channel_id_1")
 
 
-        // 设置通知的内容
-         notification = builder
-            .setContentTitle("ThermalMonitor is running")   // 设置通知标题
-            .setContentText("00:00:00")             // 设置通知内容
-            .setSmallIcon(R.drawable.tm_main_icon)  // 设置通知的小图标
-            .setContentIntent(
-                PendingIntent.getActivity(
-                    this, 0, Intent(this, MainActivity::class.java),
-                    PendingIntent.FLAG_IMMUTABLE
-                )
-            )      // 设置通知的意图，即点击通知后会执行的动作
-            .setVibrate(null)                       // 设置禁用震动
-            .setAutoCancel(false)                   // 设置用户点击后不会自动取消
-            .addAction(R.drawable.noti_start,"START",pendingIntentStart)
-            .addAction(R.drawable.noti_stop,"STOP",pendingIntentStop)
-
-            .build()                                // 调用 build 方法后，会根据之前的设置生成一个 Notification 对象
-        Log.d("create notification state","Create Success")
-
-
+        // 构建通知
+        return Notification.Builder(this, CHANNEL_ID)
+            .setContentTitle("Foreground Service") // 通知标题
+            .setContentText("This is a foreground service.") // 通知内容
+            .setSmallIcon(R.drawable.noti_start) // 通知小图标
+            .setContentIntent(pendingIntent) // 通知内容Intent
+            .addAction(R.drawable.noti_start,"START",pendingIntentStart)  // add start button
+            .addAction(R.drawable.noti_stop,"STOP",pendingIntentStop)  // add stop button
+            .setOngoing(true) // 设置为持续通知
+            .build()
     }
 
 
+    // 在您的服务或 BroadcastReceiver 中处理按钮点击事件
+    fun onReceive(context: Context, intent: Intent?){
+        if (intent != null) {
+            when(intent.action){
+                "com.example.thermalmonitor.ACTION_START" ->{
 
-    /**
-     * 停止前台服务，当服务不再需要运行在前台的时候
-     * */
-    private fun stopForeground() {
-        stopForeground(true)
-        stopSelf()
+                }
+                "com.example.thermalmonitor.ACTION_STOP" ->{
+
+                }
+            }
+        }
     }
 
-
-    /**
-     * 更新通知的方法
-     * */
-
-    // 根据当前状态更新通知
-
-
-
-
-
-
-    // 开始捕获数据的方法
-    private fun startCapturingData() {
-        // 启动数据捕获的逻辑
-        viewModel.startDataCapture()
-    }
-
-    // 停止捕获数据的方法
-    private fun stopCapturingData() {
-        // 停止数据捕获的逻辑
-        viewModel.stopDataCapture()
-    }
-
-
-    /**
-     *  用于观察DataCaptureViewModel中的timer以更新时长
-     * */
-    private fun observeElapsedTime() {
-        viewModel.timer.observe(this, Observer { elapsedTime ->
-            // 更新通知内容
-            updateNotificationContent(elapsedTime)
-        })
-    }
-
-
-
-    // 更新通知内容的方法
-    private fun updateNotificationContent(elapsedTime: String) {
-        val notificationManager = getSystemService(NotificationManager::class.java)
-
-        val builder = NotificationCompat.Builder(this, "channel_id_1")
-            .setContentTitle("ThermalMonitor is running")
-            .setContentText(elapsedTime)
-            .setSmallIcon(R.drawable.tm_main_icon)
-            .setContentIntent(
-                PendingIntent.getActivity(
-                    this, 0, Intent(this, MainActivity::class.java),
-                    PendingIntent.FLAG_IMMUTABLE
-                )
-            )
-            .setVibrate(null)
-            .setAutoCancel(false)
-
-        val notification = builder.build()
-        startForeground(1, notification)
-
-        notificationManager.notify(1, builder.build())
-    }
-
-
-
-
+    // onDestroy() 在服务被销毁时调用
     override fun onDestroy() {
         super.onDestroy()
-
-        stopForeground()
-        // 取消 LiveData 观察
-        viewModel.timer.removeObservers(this)
-
-        // 取消注册广播接收器
-        unregisterReceiver(ActionStartReceiver())
-        unregisterReceiver(ActionStopReceiver())
+        Log.i("MyForegroundService", "Service destroyed")
+        // 清理服务资源
     }
 
-
-
-    inner class ActionStartReceiver: BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            if ("START" == intent.action ){
-                // 处理Start的逻辑
-                viewModel.startDataCapture()
-                Log.d("ActionStartReceiver","开始按钮已经按下")
-            }
-        }
-    }
-
-    inner class ActionStopReceiver :BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            if ("STOP" ==intent.action ){
-                // 处理Stop的逻辑
-                viewModel.stopDataCapture()
-                Timber.tag("ActionStopReceiver").d("停止按钮已经按下")
-
-            }
-        }
-
-    }
 }
 
