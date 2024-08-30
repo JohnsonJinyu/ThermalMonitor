@@ -30,12 +30,21 @@
         tools:targetApi="31">
         <activity
             android:name=".MainActivity"
+            android:launchMode="singleTop"
             android:exported="true"
             android:theme="@style/Theme.ThermalMonitor.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.example.thermalmonitor.ACTION_START"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.example.thermalmonitor.ACTION_STOP"/>
+                <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
 
@@ -58,19 +67,7 @@
             android:foregroundServiceType="dataSync"
             android:exported="false"/>
 
-        <receiver android:name=".notification.ThermalMonitorService$ActionStartReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="START" />
-            </intent-filter>
-        </receiver>
 
-        <receiver android:name=".notification.ThermalMonitorService$ActionStopReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="STOP" />
-            </intent-filter>
-        </receiver>
 
 
 
