@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
 import android.util.SparseArray
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -130,6 +131,10 @@ class MainActivity : AppCompatActivity(), FloatWindowCallback {
     }
 
 
+
+
+
+
     class SectionsPagerAdapter(activity: AppCompatActivity) : FragmentStateAdapter(activity) {
         private val fragmentsMap = SparseArray<Fragment>()
 
@@ -188,6 +193,25 @@ class MainActivity : AppCompatActivity(), FloatWindowCallback {
     }
 
 
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        intent?.let {
+            when(it.action){
+                "com.example.thermalmonitor.ACTION_START" -> {
+                    Log.i("newIntent state","start button pressed")
+                }
+
+                "com.example.thermalmonitor.ACTION_STOP" -> {
+
+                    Log.i("newIntent state","Stop button pressed")
+                }
+
+                else -> {
+                    Log.i("newIntent state","no button has pressed")
+                }
+            }
+        }
+    }
 
 
 
