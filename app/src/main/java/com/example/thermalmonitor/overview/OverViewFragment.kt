@@ -21,6 +21,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.thermalmonitor.MyApp
 import com.example.thermalmonitor.databinding.FragmentOverviewBinding
 import com.example.thermalmonitor.interfaces.FloatWindowCallback
+import com.example.thermalmonitor.notification.ThermalMonitorService
 
 
 class OverViewFragment : Fragment() {
@@ -54,6 +55,9 @@ class OverViewFragment : Fragment() {
         // 获取Application实例
         val myApp = requireActivity().application as MyApp
         viewModel = myApp.dataCaptureViewModel // 获取DataCaptureViewModel实例
+
+
+
 
 
 
@@ -102,7 +106,7 @@ class OverViewFragment : Fragment() {
         viewModel.timer.observe(viewLifecycleOwner) { timeString ->
             binding.tvTimer.text = timeString
             // 当需要更新通知时
-            //notificationControl.updateNotification(timeString)
+
         }
 
         // 观察toastMessage用于弹窗提醒用户
@@ -116,14 +120,7 @@ class OverViewFragment : Fragment() {
         }
 
 
-        // 观察 通知栏按钮的开始或停止动作
 
-        viewModel.action.observe(viewLifecycleOwner) { action ->
-            when (action) {
-                "start" -> startDataCapture()
-                "stop" -> stopDataCapture()
-            }
-        }
 
 
 
@@ -455,6 +452,9 @@ class OverViewFragment : Fragment() {
         viewModel.stopDataCapture()
         //notificationControl.updateNotificationAction()
     }
+
+
+
 
 }
 
