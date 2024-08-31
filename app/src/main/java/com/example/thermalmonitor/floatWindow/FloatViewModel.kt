@@ -19,9 +19,9 @@ class FloatViewModel(application: Application) : AndroidViewModel(application) {
 
 
     // 获取其他ViewModel
-    private val batteryViewModel = (application as MyApp).getBatteryViewModel()
-    private val thermalViewModel = (application as MyApp).getThermalViewModel()
-    private val socViewModel = (application as MyApp).getSocViewModel()
+    private val batteryViewModel = (application as MyApp).batteryViewModel
+    private val thermalViewModel = (application as MyApp).thermalViewModel
+    private val socViewModel = (application as MyApp).socViewModel
 
 
 

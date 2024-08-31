@@ -1,5 +1,6 @@
 package com.example.thermalmonitor.overview
 
+import android.util.Log
 import com.example.thermalmonitor.soc.SocViewModel
 import com.example.thermalmonitor.thermal.ThermalViewModel
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
@@ -18,6 +19,11 @@ class DataProcessToSave(
      *这部分是对电池数据的处理
      * */
     fun processBatteryData(workbook: XSSFWorkbook, data: Array<Array<String>>) {
+
+        if (data.isEmpty()) {
+            Log.e("DataCaptureService", "Battery data array is empty")
+            return
+        }
         val sheetBattery = workbook.createSheet("TMData-Battery") // 创建电池数据的sheet页
         val titleRowBattery = sheetBattery.createRow(0) // 创建电池数据的标题行
         val titleArrayBattery = arrayOf(

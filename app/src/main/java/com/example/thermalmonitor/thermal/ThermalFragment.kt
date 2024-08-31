@@ -23,7 +23,7 @@ class ThermalFragment : Fragment() {
         binding = FragmentThermalBinding.inflate(inflater, container, false)
 
         // 使用getThermalViewModel方法获取ThermalViewModel的实例
-        viewModel = (activity?.application as MyApp).getThermalViewModel()
+        viewModel = (activity?.application as MyApp).thermalViewModel
 
         //设置RecyclerView的布局管理器和适配器，根据屏幕方向显示不同数量的列
         binding.recyclerViewThermal.layoutManager =

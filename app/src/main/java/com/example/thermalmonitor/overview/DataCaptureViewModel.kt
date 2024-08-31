@@ -27,11 +27,11 @@ import java.util.Locale
 // 定义一个接口
 
 
-class DataCaptureViewModel(
+class DataCaptureViewModel  (
     private val batteryViewModel: BatteryViewModel,
     private val thermalViewModel: ThermalViewModel,
     private val socViewModel: SocViewModel,
-    private val dataProcessor: DataProcessToSave,
+    val dataProcessor: DataProcessToSave,
     @SuppressLint("StaticFieldLeak") private val context: Context
 ) : ViewModel() {
 
@@ -60,16 +60,16 @@ class DataCaptureViewModel(
     private var socDataStoreArray = arrayOf<Array<String>>()
 
 
-    // 创建 MutableLiveData 对象来存储三个 CheckBox 的状态
-    private val _cbBatteryState = MutableLiveData<Boolean>()
+    // 创建 MutableLiveData 对象来存储三个 CheckBox 的状态 设置默认值为false
+    private val _cbBatteryState = MutableLiveData<Boolean>(false)
     val cbBatteryState: LiveData<Boolean>
         get() = _cbBatteryState
 
-    private val _cbThermalState = MutableLiveData<Boolean>()
+    private val _cbThermalState = MutableLiveData<Boolean>(false)
     val cbThermalState: LiveData<Boolean>
         get() = _cbThermalState
 
-    private val _cbSocState = MutableLiveData<Boolean>()
+    private val _cbSocState = MutableLiveData<Boolean>(false)
     val cbSocState: LiveData<Boolean>
         get() = _cbSocState
 

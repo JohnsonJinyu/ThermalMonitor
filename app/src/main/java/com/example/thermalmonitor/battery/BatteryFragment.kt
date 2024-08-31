@@ -37,7 +37,7 @@ class BatteryFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // 使用getBatteryViewModel方法获取ThermalViewModel的实例
-        viewModel =  (activity?.application as MyApp).getBatteryViewModel()
+        viewModel =  (activity?.application as MyApp).batteryViewModel
 
         viewModel.batteryData.observe(viewLifecycleOwner) { batteryData ->
             binding.apply {

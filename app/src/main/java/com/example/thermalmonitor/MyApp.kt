@@ -1,6 +1,7 @@
 package com.example.thermalmonitor
 
 import android.app.Application
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import com.example.thermalmonitor.battery.BatteryViewModel
@@ -12,32 +13,28 @@ import com.example.thermalmonitor.thermal.ThermalViewModel
 
 class MyApp : Application() {
 
-
-    // 声明一个late init变量，用于保存ThermalViewModel的实例
-    private lateinit var thermalViewModel: ThermalViewModel
-    // 声明一个late init变量，用于保存BatteryViewModel的实例
-    private lateinit var batteryViewModel: BatteryViewModel
-    // 声明一个late init变量，用于保存SocViewModel的实例
-    private lateinit var socViewModel: SocViewModel
+    // 使用 lateinit 声明 ViewModel 实例
+    lateinit var thermalViewModel: ThermalViewModel
+    lateinit var batteryViewModel: BatteryViewModel
+    lateinit var socViewModel: SocViewModel
 
     // DataCaptureViewModel的单例
     lateinit var dataCaptureViewModel: DataCaptureViewModel
 
+    // 定义 MutableLiveData 实例
+    private val timer2 = MutableLiveData<String>()
+
     override fun onCreate() {
         super.onCreate()
 
-        // 创建ThermalViewModel的实例
+        // 初始化 ViewModel 实例
         thermalViewModel = ThermalViewModel(this)
-        // 创建BatteryViewModel的实例
         batteryViewModel = BatteryViewModel(this)
-        // 创建SocViewModel的实例
         socViewModel = SocViewModel(this)
 
-
-        // 创建DataCaptureViewModel的单例，然后用于OverViewFragment以及FloatWindow中共享
+        // 创建 DataCaptureViewModel 的单例
         val dataProcessor = DataProcessToSave(thermalViewModel, socViewModel)
-        val factory = ViewModelFactory(batteryViewModel, thermalViewModel, socViewModel, dataProcessor, this  )
-        // 使用ViewModelProvider来创建DataCaptureViewModel实例
+        val factory = ViewModelFactory(batteryViewModel, thermalViewModel, socViewModel, dataProcessor, this)
         dataCaptureViewModel = ViewModelProvider(
             ViewModelStore(),
             factory
@@ -45,20 +42,7 @@ class MyApp : Application() {
     }
 
 
-    // 为了在FloatWindow中获取ThermalViewModel的实例，需要添加一个方法
-    fun getThermalViewModel(): ThermalViewModel {
-        return thermalViewModel
+    fun getTimer2(): MutableLiveData<String> {
+        return timer2
     }
-
-    // 为了在FloatWindow中获取BatteryViewModel的实例，需要添加一个方法
-    fun getBatteryViewModel(): BatteryViewModel {
-        return batteryViewModel
-    }
-
-    // 为了在FloatWindow中获取SocViewModel的实例，需要添加一个方法
-    fun getSocViewModel(): SocViewModel {
-        return socViewModel
-    }
-
-
 }

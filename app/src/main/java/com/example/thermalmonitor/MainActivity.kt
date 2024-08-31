@@ -20,7 +20,7 @@ import com.example.thermalmonitor.battery.BatteryFragment
 import com.example.thermalmonitor.filesList.FilesListFragment
 import com.example.thermalmonitor.floatWindow.FloatWindowService
 import com.example.thermalmonitor.interfaces.FloatWindowCallback
-import com.example.thermalmonitor.notification.ThermalMonitorService
+import com.example.thermalmonitor.overview.DataCaptureService
 import com.example.thermalmonitor.overview.OverViewFragment
 import com.example.thermalmonitor.soc.SocFragment
 import com.example.thermalmonitor.thermal.ThermalFragment
@@ -119,7 +119,7 @@ class MainActivity : AppCompatActivity(), FloatWindowCallback {
 
 
         // 启动服务
-        startService(Intent(this, ThermalMonitorService::class.java))
+        startService(Intent(this, DataCaptureService::class.java))
         Log.d("MainServiceReport","MainActivity start service success")
 
     }

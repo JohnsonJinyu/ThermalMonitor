@@ -22,7 +22,7 @@ class SocFragment : Fragment() {
     ): View {
         binding = FragmentSocBinding.inflate(inflater, container, false) // 初始化view binding
 
-        viewModel = (activity?.application as MyApp).getSocViewModel() // 使用MyApp中的方法获取view model的实例
+        viewModel = (activity?.application as MyApp).socViewModel // 使用MyApp中的方法获取view model的实例
 
         adapter = SocAdapter { coreNumber, isChecked ->
             viewModel.updateCheckedState(coreNumber, isChecked)

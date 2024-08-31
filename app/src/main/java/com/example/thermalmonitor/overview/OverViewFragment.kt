@@ -21,7 +21,6 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.thermalmonitor.MyApp
 import com.example.thermalmonitor.databinding.FragmentOverviewBinding
 import com.example.thermalmonitor.interfaces.FloatWindowCallback
-import com.example.thermalmonitor.notification.ThermalMonitorService
 
 
 class OverViewFragment : Fragment() {
@@ -109,6 +108,12 @@ class OverViewFragment : Fragment() {
 
         }
 
+        // 观察 timer2 的变化
+        myApp.getTimer2().observe(viewLifecycleOwner) { newTimestamp ->
+            binding.tvTimer.text = newTimestamp
+        }
+
+
         // 观察toastMessage用于弹窗提醒用户
         viewModel.toastMessage.observe(viewLifecycleOwner) { message ->
             Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
@@ -129,13 +134,26 @@ class OverViewFragment : Fragment() {
          * 设置开始按钮的点击事件
          * */
         binding.btnStart.setOnClickListener {
-            if (!cbBattery.isChecked && !cbThermal.isChecked && !cbSoc.isChecked) {
+            /*if (!cbBattery.isChecked && !cbThermal.isChecked && !cbSoc.isChecked) {
                 Toast.makeText(requireContext(), "请至少选择一项数据", Toast.LENGTH_SHORT).show()
-            } else {
+            }*/
+            // 检查是否至少选择了一项数据 由直接检查checkbox的状态改为检查对应的livedata的值
+            /*if (viewModel.cbBatteryState.value == false && viewModel.cbThermalState.value == false
+                && viewModel.cbSocState.value == false) {
+                Toast.makeText(requireContext(), "请至少选择一项数据", Toast.LENGTH_SHORT).show()
+            }
+            else {
                 //viewModel.startDataCapture()
                 startDataCapture() // 调用公共的开始数据捕获方法
+            }*/
+
+
+            val startIntent = Intent(requireContext(), DataCaptureService::class.java).apply {
+                action = DataCaptureService.ACTION_START
             }
+            requireContext().startService(startIntent)
         }
+
 
 
         /**
@@ -151,7 +169,14 @@ class OverViewFragment : Fragment() {
          * */
         binding.btnStopAndSave.setOnClickListener {
             //viewModel.stopDataCapture()
-            stopDataCapture() // 调用公共的停止数据捕获方法
+            //stopDataCapture() // 调用公共的停止数据捕获方法
+
+            // 发送停止抓取数据的命令给服务
+            val stopIntent = Intent(requireContext(), DataCaptureService::class.java).apply {
+                action = DataCaptureService.ACTION_STOP
+            }
+            requireContext().stopService(stopIntent)
+
         }
 
 
@@ -171,11 +196,7 @@ class OverViewFragment : Fragment() {
 
 
 
-        // 注册接收器
-        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(dataCaptureReceiver, IntentFilter().apply {
-            addAction("start")
-            addAction("stop")
-        })
+
 
         return binding.root
 
@@ -183,14 +204,7 @@ class OverViewFragment : Fragment() {
 
 
 
-    private val dataCaptureReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            when (intent?.action) {
-                "start" -> startDataCapture()
-                "stop" -> stopDataCapture()
-            }
-        }
-    }
+
 
 
     // 点击中止按钮后的Dialog
@@ -229,7 +243,7 @@ class OverViewFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         // 注销接收器
-        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(dataCaptureReceiver)
+        //LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(dataCaptureReceiver)
     }
 
 
@@ -441,17 +455,7 @@ class OverViewFragment : Fragment() {
             .show()
     }
 
-    // 定义公共的开始数据捕获方法
-    fun startDataCapture() {
-        viewModel.startDataCapture()
-        //notificationControl.updateNotificationAction()
-    }
 
-    // 定义公共的停止数据捕获方法
-    fun stopDataCapture() {
-        viewModel.stopDataCapture()
-        //notificationControl.updateNotificationAction()
-    }
 
 
 
