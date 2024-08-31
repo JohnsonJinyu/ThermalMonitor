@@ -12,7 +12,9 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.thermalmonitor.MainActivity
+import com.example.thermalmonitor.MyApp
 import com.example.thermalmonitor.R
+import com.example.thermalmonitor.overview.DataCaptureViewModel
 
 class ThermalMonitorService : Service() {
 
@@ -24,10 +26,19 @@ class ThermalMonitorService : Service() {
     }
 
 
+    private lateinit var dataCaptureViewModel: DataCaptureViewModel
+
 
     // onCreate() 在服务首次创建时调用
     override fun onCreate() {
         super.onCreate()
+
+        // 获取application 实例
+        val myAPP = applicationContext as MyApp
+        // 获取DataCaptureViewModel实例
+        dataCaptureViewModel = myAPP.dataCaptureViewModel
+
+
 
         // 创建通知渠道
         createNotificationChannel()
@@ -40,9 +51,12 @@ class ThermalMonitorService : Service() {
         when(intent?.action){
             ACTION_START -> {
                 Log.i("Button State","START BUTTON PRESSED")
+                dataCaptureViewModel.startDataCapture()
+
             }
             ACTION_STOP -> {
                 Log.i("Button State","STOP BUTTON PRESSED")
+                dataCaptureViewModel.stopDataCapture()
             }
         }
 
@@ -89,8 +103,8 @@ class ThermalMonitorService : Service() {
 
 
         val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Foreground Service")
-            .setContentText("This is a foreground service with a button.")
+            .setContentTitle("ThermalMonitor Service Is Running")
+            .setContentText("00:00:00")
             .setSmallIcon(R.drawable.tm_main_icon)
             .setContentIntent(pendingIntent)
             .addAction(R.drawable.noti_start, "START", startPendingIntent)
