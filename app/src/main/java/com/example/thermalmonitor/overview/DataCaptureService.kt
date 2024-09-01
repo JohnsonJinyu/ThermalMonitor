@@ -42,13 +42,12 @@ class DataCaptureService(): Service() {
         const val CHANNEL_ID = "thermal_monitoring_channel"
         const val ACTION_START = "com.example.thermalmonitor.ACTION_START_CAPTURE"
         const val ACTION_STOP = "com.example.thermalmonitor.ACTION_STOP_CAPTURE"
-        const val WAKE_LOCK_TIMEOUT = 120 * 60 * 1000L // 2 hours in milliseconds
+
     }
 
     private var isRecording = false
     private var job: Job? = null
-    private lateinit var wakeLock: PowerManager.WakeLock
-    private var isWakeLockHeld = false
+
 
     private lateinit var dataCaptureViewModel: DataCaptureViewModel
 
@@ -83,10 +82,7 @@ class DataCaptureService(): Service() {
 
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (!isWakeLockHeld) {
-            wakeLock.acquire(WAKE_LOCK_TIMEOUT)
-            isWakeLockHeld = true
-        }
+
         when(intent?.action){
             ACTION_START -> {
                 Log.i("Button State","START BUTTON PRESSED")
@@ -101,19 +97,13 @@ class DataCaptureService(): Service() {
         return START_STICKY
     }
 
-    private fun releaseWakeLock() {
-        if (isWakeLockHeld) {
-            wakeLock.release()
-            isWakeLockHeld = false
-        }
-    }
+
 
     override fun onCreate() {
 
         super.onCreate()
-        val powerManager = getSystemService(POWER_SERVICE) as PowerManager
-        wakeLock = powerManager.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "DataCaptureService::WakeLock")
-        //wakeLock.acquire()  // 获取唤醒锁
+
+
 
 
         // 获取application 实例
@@ -542,7 +532,7 @@ class DataCaptureService(): Service() {
         job?.cancel()
         wakeLock.release()
         stopForeground(true)*/
-        releaseWakeLock()
+
     }
 
 
