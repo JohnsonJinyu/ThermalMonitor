@@ -2,13 +2,14 @@ package com.example.thermalmonitor.overview
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
+import android.content.ServiceConnection
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.os.IBinder
 import android.os.PowerManager
 import android.provider.Settings
 import android.view.LayoutInflater
@@ -17,7 +18,6 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.thermalmonitor.MyApp
 import com.example.thermalmonitor.databinding.FragmentOverviewBinding
 import com.example.thermalmonitor.interfaces.FloatWindowCallback
@@ -32,6 +32,40 @@ class OverViewFragment : Fragment() {
 
     private lateinit var viewModel: DataCaptureViewModel
 
+
+    private var service: DataCaptureService? = null
+
+    private val connection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, serviceBinder: IBinder?) {
+            val binder = serviceBinder as DataCaptureService.LocalBinder
+            service = binder.getService()
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            service = null
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // 绑定服务
+        val intent = Intent(activity, DataCaptureService::class.java)
+        activity?.bindService(intent, connection, Context.BIND_AUTO_CREATE)
+    }
+
+    override fun onStop() {
+        activity?.unbindService(connection)
+        super.onStop()
+    }
+
+
+    fun startCapture() {
+        service?.startDataCapture()
+    }
+
+    fun stopCapture() {
+        service?.stopDataCapture()
+    }
 
     // 调用接口
     private var callback: FloatWindowCallback? = null
@@ -59,11 +93,6 @@ class OverViewFragment : Fragment() {
 
 
 
-
-        // 分别定义三个变量绑定三个checkbox
-        val cbBattery = binding.cbBattery
-        val cbThermal = binding.cbThermal
-        val cbSoc = binding.cbSoc
 
 
         /**
@@ -148,10 +177,12 @@ class OverViewFragment : Fragment() {
             }*/
 
 
-            val startIntent = Intent(requireContext(), DataCaptureService::class.java).apply {
+            /*val startIntent = Intent(requireContext(), DataCaptureService::class.java).apply {
                 action = DataCaptureService.ACTION_START
             }
-            requireContext().startService(startIntent)
+            requireContext().startService(startIntent)*/
+
+            startCapture()
         }
 
 
@@ -172,10 +203,12 @@ class OverViewFragment : Fragment() {
             //stopDataCapture() // 调用公共的停止数据捕获方法
 
             // 发送停止抓取数据的命令给服务
-            val stopIntent = Intent(requireContext(), DataCaptureService::class.java).apply {
+            /*val stopIntent = Intent(requireContext(), DataCaptureService::class.java).apply {
                 action = DataCaptureService.ACTION_STOP
             }
-            requireContext().stopService(stopIntent)
+            requireContext().stopService(stopIntent)*/
+
+            stopCapture()
 
         }
 

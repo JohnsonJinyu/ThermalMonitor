@@ -8,6 +8,7 @@ import android.app.Service
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.os.Binder
 import android.os.Environment
 import android.os.IBinder
 import android.os.PowerManager
@@ -76,10 +77,19 @@ class DataCaptureService(): Service() {
     private lateinit var startPendingIntent: PendingIntent
     private lateinit var stopPendingIntent: PendingIntent
 
-    override fun onBind(intent: Intent?): IBinder? {
-        TODO("Not yet implemented")
+
+    // 定义 Binder
+    inner class LocalBinder : Binder() {
+        // 返回当前服务的实例
+        fun getService(): DataCaptureService = this@DataCaptureService
     }
 
+    // 定义一个变量来持有 Binder 的实例
+    private val binder = LocalBinder()
+
+    override fun onBind(intent: Intent?): IBinder? {
+        return binder
+    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
@@ -146,7 +156,7 @@ class DataCaptureService(): Service() {
     /**
      * 启动一个协程，调用方法抓取数据
      * */
-    private fun startDataCapture() {
+    fun startDataCapture() {
 
         // 检查是否至少选择了一个数据项
         if(dataCaptureViewModel.cbBatteryState.value == false &&
@@ -218,7 +228,7 @@ class DataCaptureService(): Service() {
     /**
      * 停止抓取数据的方法
      * */
-    private fun stopDataCapture() {
+    fun stopDataCapture() {
         if (isRecording) {
             isRecording = false
             job?.cancel()
