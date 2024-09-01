@@ -10,6 +10,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.os.Binder
+import android.os.Build
 import android.os.Environment
 import android.os.IBinder
 import android.os.PowerManager
@@ -277,15 +278,23 @@ class DataCaptureService(): Service() {
     /**
      * 创建通知渠道的方法
      * */
-    private fun createNotificationChannel(){
-        val serviceChannel = NotificationChannel(
-            CHANNEL_ID,
-            "Foreground Service Channel",
-            NotificationManager.IMPORTANCE_DEFAULT
-        )
-        val manager = getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(serviceChannel)
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channelId = DataCaptureService.CHANNEL_ID
+            val channelName = "Thermal Monitoring Channel"
+            val importance = NotificationManager.IMPORTANCE_DEFAULT // 设置为默认重要性
+            val channel = NotificationChannel(channelId, channelName, importance).apply {
+                description = "Channel for thermal monitoring service"
+                setSound(null, null) // 禁用声音
+                enableVibration(false) // 禁用震动
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC // 确保在锁屏时显示通知
+            }
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
     }
+
+
 
 
     /**
@@ -306,7 +315,10 @@ class DataCaptureService(): Service() {
             .addAction(R.drawable.noti_stop,"STOP",stopPendingIntent)
             .setOngoing(true)
             .setAutoCancel(false)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC) // 确保在锁屏时显示通知
             .build()
+
+
 
         startForeground(1,notification)
     }
@@ -332,6 +344,7 @@ class DataCaptureService(): Service() {
             .addAction(R.drawable.noti_stop, "STOP", stopPendingIntent)
             .setOngoing(true)
             .setAutoCancel(false)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC) // 确保在锁屏时显示通知
 
         // 使用相同的通知ID更新通知
         notificationManager.notify(1, notificationBuilder.build())
