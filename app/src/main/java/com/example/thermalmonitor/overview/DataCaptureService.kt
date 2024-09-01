@@ -51,6 +51,8 @@ class DataCaptureService(): Service() {
     }
 
 
+    private lateinit var wakeLock: PowerManager.WakeLock
+
 
     private var isRecording = false
     private var job: Job? = null
@@ -136,7 +138,9 @@ class DataCaptureService(): Service() {
 
 
 
-
+        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyApp::DataCaptureWakelock")
+        wakeLock.acquire()
 
 
         // 观察DataCaptureViewModel中timer的值，并更新通知
@@ -553,10 +557,9 @@ class DataCaptureService(): Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        /*isRecording = false
-        job?.cancel()
-        wakeLock.release()
-        stopForeground(true)*/
+        if (wakeLock.isHeld) {
+            wakeLock.release()
+        }
 
     }
 
