@@ -63,15 +63,12 @@ class DataCaptureService(): Service() {
 
     // 使用一个可变的变量来存储计时器的值
     private var currentTime = 0
-    // 创建 LiveData 对象来存储时间的值
-    private val _timer2 = MutableLiveData<String>()
-    val timer2: LiveData<String> get() = _timer2
+
 
     // 定义一个时间戳
     private var timestamp = "00:00:00"
 
-    private val _timeString = MutableStateFlow("00:00:00")
-    val timeString: StateFlow<String> = _timeString
+
 
 
     // a two-dimensional array to store the data, default is empty
@@ -138,10 +135,7 @@ class DataCaptureService(): Service() {
 
 
 
-        myAPP.getTimer2().observeForever { newTimestamp ->
-            _timer2.value = newTimestamp
-            updateTimestamp(newTimestamp)
-        }
+
 
 
         // 观察DataCaptureViewModel中timer的值，并更新通知
@@ -188,13 +182,10 @@ class DataCaptureService(): Service() {
 
                     currentTime = 0 //重置计时器的值
 
-                    // 由于在协程中无法更新livedata，需要切换到主线程更新 LiveData
+                    // 使用 withContext 切换到主线程显示 Toast
                     withContext(Dispatchers.Main) {
-                        _timer2.value = "00:00:00"  // 更新 LiveData 对象
-                        // Toast 提醒已经开始抓取数据
                         Toast.makeText(this@DataCaptureService, "已开始记录！", Toast.LENGTH_SHORT).show()
                     }
-
 
                     while (isActive && isRecording) {
                         // 这里放置数据抓取和更新 UI 的逻辑
@@ -214,13 +205,10 @@ class DataCaptureService(): Service() {
 
 
                         timestamp = formatTime(++currentTime)
-                        _timeString.value = formatTime(++currentTime)
-
-                        // 在主线程中更新LiveData
+                        // 更新 LiveData
                         withContext(Dispatchers.Main) {
-                            _timer2.value = timestamp
-                        }  // fragment中的观察者会收到通知并更新UI
-
+                            dataCaptureViewModel._timer.value = timestamp
+                        }
                         updateTimestamp(timestamp)
                         delay(1000)
                     }
@@ -228,8 +216,10 @@ class DataCaptureService(): Service() {
 
         }
         else{
-            //showToast("正在记录中，请勿重复点击")
-            Toast.makeText(this,"正在记录中，请勿重复点击",Toast.LENGTH_SHORT).show()
+            // 使用 withContext 切换到主线程显示 Toast
+            CoroutineScope(Dispatchers.Main).launch {
+                Toast.makeText(this@DataCaptureService, "正在记录中，请勿重复点击", Toast.LENGTH_SHORT).show()
+            }
         }
 
     }

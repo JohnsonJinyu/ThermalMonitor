@@ -42,7 +42,4 @@ class MyApp : Application() {
     }
 
 
-    fun getTimer2(): MutableLiveData<String> {
-        return timer2
-    }
 }

@@ -36,16 +36,13 @@ class DataCaptureViewModel  (
 ) : ViewModel() {
 
     // 定义一个变量去判定是否在抓取状态，默认false
-    var isRecording = false
-
-    // 定义一个变量去管理开始或停止抓取数据
-    val action = MutableLiveData<String>()
-
+    private var isRecording = false
 
     // 创建 LiveData 对象来存储时间的值
-    private val _timer = MutableLiveData<String>()
+    val _timer = MutableLiveData<String>()
     val timer: LiveData<String>
         get() = _timer
+
     // 使用一个可变的变量来存储计时器的值
     private var currentTime = 0
 

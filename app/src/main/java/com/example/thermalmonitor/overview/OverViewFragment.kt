@@ -135,11 +135,11 @@ class OverViewFragment : Fragment() {
          * */
 
         // 观察 timer 的变化，并更新界面
-        /*viewModel.timer.observe(viewLifecycleOwner) { timeString ->
+        viewModel.timer.observe(viewLifecycleOwner) { timeString ->
             binding.tvTimer.text = timeString
             // 当需要更新通知时
 
-        }*/
+        }
 
 
 
