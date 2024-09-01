@@ -1,5 +1,6 @@
 package com.example.thermalmonitor.overview
 
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -28,6 +29,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -45,6 +48,8 @@ class DataCaptureService(): Service() {
         const val ACTION_STOP = "com.example.thermalmonitor.ACTION_STOP_CAPTURE"
 
     }
+
+
 
     private var isRecording = false
     private var job: Job? = null
@@ -64,6 +69,10 @@ class DataCaptureService(): Service() {
 
     // 定义一个时间戳
     private var timestamp = "00:00:00"
+
+    private val _timeString = MutableStateFlow("00:00:00")
+    val timeString: StateFlow<String> = _timeString
+
 
     // a two-dimensional array to store the data, default is empty
     private var timeDataArray = arrayOf<Array<String>>()
@@ -91,6 +100,10 @@ class DataCaptureService(): Service() {
         return binder
     }
 
+
+
+
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         when(intent?.action){
@@ -110,11 +123,7 @@ class DataCaptureService(): Service() {
 
 
     override fun onCreate() {
-
         super.onCreate()
-
-
-
 
         // 获取application 实例
         val myAPP = applicationContext as MyApp
@@ -205,6 +214,7 @@ class DataCaptureService(): Service() {
 
 
                         timestamp = formatTime(++currentTime)
+                        _timeString.value = formatTime(++currentTime)
 
                         // 在主线程中更新LiveData
                         withContext(Dispatchers.Main) {
@@ -234,6 +244,7 @@ class DataCaptureService(): Service() {
             job?.cancel()
             currentTime = 0
 
+            Toast.makeText(this, "已停止记录", Toast.LENGTH_SHORT).show()
             /**
              * 需要将时间戳的字符串转换为 Date 对象，然后再进行格式化。
              * 可以使用 SimpleDateFormat 将时间戳的字符串解析为 Date 对象，然后再格式化为你想要的格式。
@@ -449,6 +460,7 @@ class DataCaptureService(): Service() {
     /**
      *  格式化时间为字符串
      * */
+    @SuppressLint("DefaultLocale")
     private fun formatTime(seconds: Int): String {
         val hours = seconds / 3600
         val minutes = (seconds % 3600) / 60

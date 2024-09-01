@@ -18,6 +18,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import com.example.thermalmonitor.MyApp
 import com.example.thermalmonitor.databinding.FragmentOverviewBinding
 import com.example.thermalmonitor.interfaces.FloatWindowCallback
@@ -39,6 +40,7 @@ class OverViewFragment : Fragment() {
         override fun onServiceConnected(name: ComponentName?, serviceBinder: IBinder?) {
             val binder = serviceBinder as DataCaptureService.LocalBinder
             service = binder.getService()
+
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -51,6 +53,8 @@ class OverViewFragment : Fragment() {
         // 绑定服务
         val intent = Intent(activity, DataCaptureService::class.java)
         activity?.bindService(intent, connection, Context.BIND_AUTO_CREATE)
+
+
     }
 
     override fun onStop() {
@@ -59,18 +63,18 @@ class OverViewFragment : Fragment() {
     }
 
 
-    fun startCapture() {
+    private fun startCapture() {
         service?.startDataCapture()
     }
 
-    fun stopCapture() {
+    private fun stopCapture() {
         service?.stopDataCapture()
     }
 
     // 调用接口
     private var callback: FloatWindowCallback? = null
 
-    // 使用 lateinit 定义 binding 成员变量
+    // 使用 late init 定义 binding 成员变量
     private lateinit var binding: FragmentOverviewBinding
 
     @SuppressLint("SetTextI18n")
@@ -131,16 +135,12 @@ class OverViewFragment : Fragment() {
          * */
 
         // 观察 timer 的变化，并更新界面
-        viewModel.timer.observe(viewLifecycleOwner) { timeString ->
+        /*viewModel.timer.observe(viewLifecycleOwner) { timeString ->
             binding.tvTimer.text = timeString
             // 当需要更新通知时
 
-        }
+        }*/
 
-        // 观察 timer2 的变化
-        myApp.getTimer2().observe(viewLifecycleOwner) { newTimestamp ->
-            binding.tvTimer.text = newTimestamp
-        }
 
 
         // 观察toastMessage用于弹窗提醒用户
@@ -487,8 +487,6 @@ class OverViewFragment : Fragment() {
             .setNegativeButton("取消", null)
             .show()
     }
-
-
 
 
 
