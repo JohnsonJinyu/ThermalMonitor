@@ -116,6 +116,13 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /**
+     * 两种读取频点的方法，
+     * 1、遍历每个频点 cat sys/devices/system/cpu/cpu* /cpufreq/scaling_cur_freq
+     * 2、按照大小核心分组 遍历，因为每组核心频点实际一样 cat sys/devices/system/cpu
+     *
+     * */
+
 
     private fun readDynamicInfo() {
         viewModelScope.launch(Dispatchers.IO) { // 在IO线程中读取文件
