@@ -82,19 +82,8 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
                 // 读取文件的逻辑
                 val info = StaticInfo() // 创建一个静态信息对象，用于存储读取到的数据
 
-                /*staticInfoFile.forEachLine { line -> // 遍历文件的每一行，解析出需要的数据，并赋值给静态信息对象的属性
-                    when {
-                        line.startsWith("Hardware") -> { // 如果是硬件名称，就截取冒号后面的部分，并去掉空格和换行符
-                            info.hardwareName = line.substringAfter(":").trim()
-                        }
 
-                        line.startsWith("processor") -> { // 如果是处理器编号，就说明有一个核心，就让核心数加一
-                            info.coreCount++
-                        }
-                    }
-                }*/
-
-                info.socName=getSocModel()
+                info.hardwareName = getSocModel()
                 info.socManyFacture = getSocManufacturer()
                 info.coreCount = getCpuCoreCount()
 
@@ -210,35 +199,37 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
     }
 
 
+    // honor : [ro.product.brand]: [HONOR]   [ro.product.vendor.manufacturer]: [QUALCOMM] [ro.soc.mode] : [SM8550]
+    // vivo/oppo : [ro.product.brand]: [vivo]  [ro.soc.manufacturer]: [Mediatek] [ro.hardware]: [MTK8985]
+    // HUAWEI :  [ro.product.brand]: [HUAWEI]  [ro.soc.manufacturer]: [hisilicon] [ro.hardware]: [kirin9000]
+
     /**
      * 获取CPU的制造商
-     * */
-    fun getSocManufacturer(): String {
-        val manufacturer = Build.MANUFACTURER
-        return if (manufacturer.isNotEmpty()) {
-            manufacturer
-        } else {
-            getSystemProperty("ro.soc.manufacturer")
+     */
+    private fun getSocManufacturer(): String {
+        var manufacturer = " "
+
+        when (getSystemProperty("ro.product.brand")) {
+            "HONOR" -> manufacturer = getSystemProperty("ro.product.vendor.manufacturer")
+            "vivo", "oppo", "HUAWEI" -> manufacturer = getSystemProperty("ro.soc.manufacturer")
         }
+
+        return manufacturer
     }
 
-
-    /**
-     * 获取CPU的名称
-     * */
-    fun getSocModel(): String {
-        val model = Build.MODEL
-        return if (model.isNotEmpty()) {
-            model
-        } else {
-            getSystemProperty("ro.soc.model")
-        }
+    private fun getSocModel(): String {
+        val socName = ""
+         when(getSystemProperty("ro.product.brand")) {
+            "HONOR" -> return getSystemProperty("ro.soc.mode")
+             "vivo", "oppo", "HUAWEI" -> return getSystemProperty("ro.hardware")
+         }
+        return socName
     }
 
     /**
      *  获取CPU核心数
      * */
-    fun getCpuCoreCount(): Int {
+    private fun getCpuCoreCount(): Int {
         return try {
             val process = Runtime.getRuntime().exec("getprop ro.product.cpu.abilist")
             process.inputStream.bufferedReader().use { reader ->
@@ -254,7 +245,7 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun getSystemProperty(propertyName: String): String {
         return try {
-            val process = Runtime.getRuntime().exec("getprop $propertyName")
+            val process = Runtime.getRuntime().exec("getprop | grep $propertyName")
             process.inputStream.bufferedReader().use { it.readLine() }
         } catch (e: Exception) {
             Timber.e(e, "Failed to get system property: $propertyName")

@@ -1,6 +1,7 @@
 package com.example.thermalmonitor.soc
 
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -16,6 +17,7 @@ class SocFragment : Fragment() {
     private lateinit var viewModel: SocViewModel // 使用view model来管理数据和逻辑
     private lateinit var adapter: SocAdapter // 使用recycler view adapter来展示动态信息
 
+    @SuppressLint("SetTextI18n")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -31,7 +33,7 @@ class SocFragment : Fragment() {
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext()) // 设置recycler view的布局管理器为线性布局
 
         viewModel.staticInfo.observe(viewLifecycleOwner) { info -> // 观察静态信息的变化，如果有变化就更新UI
-            binding.hardwareName.text = info.hardwareName // 设置硬件名称
+            binding.hardwareName.text = info.socManyFacture +"  " + info.hardwareName // 设置硬件名称
             binding.coreCount.text = info.coreCount.toString() // 设置核心数
             binding.frequencyRange.text = info.frequencyRange // 设置频率范围
         }
