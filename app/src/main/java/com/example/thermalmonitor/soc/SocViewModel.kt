@@ -1,6 +1,7 @@
 package com.example.thermalmonitor.soc
 
 import android.app.Application
+import android.os.Build
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -10,9 +11,16 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import org.apache.xmlbeans.SystemProperties
 import timber.log.Timber
 import java.io.File
 
+
+/**
+ *  这个类的作用：
+ *  1、获取CPU的静态信息,Name：MT6983；ManyFacture：Mediatek,Qualcomm;核心数量 ，频率范围
+ *  2、获取CPU的动态信息，实时频率
+ * */
 class SocViewModel(application: Application) : AndroidViewModel(application) {
 
     private val staticInfoFile = File("/proc/cpuinfo") // 静态信息文件的路径，可以根据实际情况修改
@@ -23,6 +31,17 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _dynamicInfo = MutableLiveData<List<DynamicInfo>>() // 动态信息的内部可变数据，只能在view model中修改
     val dynamicInfo: LiveData<List<DynamicInfo>> = _dynamicInfo // 动态信息的外部不可变数据，可以在fragment中观察
+
+
+
+    /**
+     * [ro.soc.manufacturer]: [Mediatek]
+     * [ro.soc.model]: [MT6983]
+     *
+     *
+     * */
+
+
 
     /**
      * 在ViewModel中创建了一个Adapter的实例，并提供了onCheckedChange函数的实现。
@@ -63,7 +82,7 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
                 // 读取文件的逻辑
                 val info = StaticInfo() // 创建一个静态信息对象，用于存储读取到的数据
 
-                staticInfoFile.forEachLine { line -> // 遍历文件的每一行，解析出需要的数据，并赋值给静态信息对象的属性
+                /*staticInfoFile.forEachLine { line -> // 遍历文件的每一行，解析出需要的数据，并赋值给静态信息对象的属性
                     when {
                         line.startsWith("Hardware") -> { // 如果是硬件名称，就截取冒号后面的部分，并去掉空格和换行符
                             info.hardwareName = line.substringAfter(":").trim()
@@ -73,10 +92,19 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
                             info.coreCount++
                         }
                     }
-                }
+                }*/
+
+                info.socName=getSocModel()
+                info.socManyFacture = getSocManufacturer()
+                info.coreCount = getCpuCoreCount()
+
+
 
                 // 根据核心数，遍历每个核心，读取对应的最大最小频率文件，并生成一个频率范围的字符串，格式参考题目要求
                 // 使用一个map来存储每个频率范围对应的核心数
+
+
+
                 val rangeMap = mutableMapOf<String, Int>()
                 for (i in 0 until info.coreCount) {
                     val minFile = File(
@@ -119,7 +147,7 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
     /**
      * 两种读取频点的方法，
      * 1、遍历每个频点 cat sys/devices/system/cpu/cpu* /cpufreq/scaling_cur_freq
-     * 2、按照大小核心分组 遍历，因为每组核心频点实际一样 cat sys/devices/system/cpu
+     * 2、按照大小核心分组 遍历，因为每组核心频点实际一样 cat sys/devices/system/cpu/cpufreq/policy* /scaling_cur_freq /
      *
      * */
 
@@ -180,4 +208,61 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
             if (it.coreNumber == coreNumber) it.copy(isChecked = isChecked) else it
         }
     }
+
+
+    /**
+     * 获取CPU的制造商
+     * */
+    fun getSocManufacturer(): String {
+        val manufacturer = Build.MANUFACTURER
+        return if (manufacturer.isNotEmpty()) {
+            manufacturer
+        } else {
+            getSystemProperty("ro.soc.manufacturer")
+        }
+    }
+
+
+    /**
+     * 获取CPU的名称
+     * */
+    fun getSocModel(): String {
+        val model = Build.MODEL
+        return if (model.isNotEmpty()) {
+            model
+        } else {
+            getSystemProperty("ro.soc.model")
+        }
+    }
+
+    /**
+     *  获取CPU核心数
+     * */
+    fun getCpuCoreCount(): Int {
+        return try {
+            val process = Runtime.getRuntime().exec("getprop ro.product.cpu.abilist")
+            process.inputStream.bufferedReader().use { reader ->
+                val cpuInfo = reader.readLine()
+                cpuInfo.split(",").size
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to get CPU core count")
+            0
+        }
+    }
+
+
+    private fun getSystemProperty(propertyName: String): String {
+        return try {
+            val process = Runtime.getRuntime().exec("getprop $propertyName")
+            process.inputStream.bufferedReader().use { it.readLine() }
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to get system property: $propertyName")
+            ""
+        }
+    }
+
+
+
+
 }

@@ -36,9 +36,11 @@ class SocFragment : Fragment() {
             binding.frequencyRange.text = info.frequencyRange // 设置频率范围
         }
 
+
         viewModel.dynamicInfo.observe(viewLifecycleOwner) { list -> // 观察动态信息的变化，如果有变化就更新UI
             adapter.submitList(list) // 提交新的列表给adapter，让它刷新数据
         }
+
 
         return binding.root // 返回根视图
     }
