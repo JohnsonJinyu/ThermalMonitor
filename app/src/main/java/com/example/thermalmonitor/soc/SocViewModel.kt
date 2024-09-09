@@ -1,7 +1,7 @@
 package com.example.thermalmonitor.soc
 
 import android.app.Application
-import android.os.Build
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -11,9 +11,11 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import org.apache.xmlbeans.SystemProperties
 import timber.log.Timber
+import java.io.BufferedReader
 import java.io.File
+import java.io.IOException
+import java.io.InputStreamReader
 
 
 /**
@@ -31,16 +33,6 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _dynamicInfo = MutableLiveData<List<DynamicInfo>>() // 动态信息的内部可变数据，只能在view model中修改
     val dynamicInfo: LiveData<List<DynamicInfo>> = _dynamicInfo // 动态信息的外部不可变数据，可以在fragment中观察
-
-
-
-    /**
-     * [ro.soc.manufacturer]: [Mediatek]
-     * [ro.soc.model]: [MT6983]
-     *
-     *
-     * */
-
 
 
     /**
@@ -82,16 +74,14 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
                 // 读取文件的逻辑
                 val info = StaticInfo() // 创建一个静态信息对象，用于存储读取到的数据
 
-
                 info.hardwareName = getSocModel()
+                Log.i("hardwareName", info.hardwareName)
                 info.socManyFacture = getSocManufacturer()
                 info.coreCount = getCpuCoreCount()
 
 
-
                 // 根据核心数，遍历每个核心，读取对应的最大最小频率文件，并生成一个频率范围的字符串，格式参考题目要求
                 // 使用一个map来存储每个频率范围对应的核心数
-
 
 
                 val rangeMap = mutableMapOf<String, Int>()
@@ -191,7 +181,6 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
     }
 
 
-
     fun updateCheckedState(coreNumber: Int, isChecked: Boolean) {
         _dynamicInfo.value = _dynamicInfo.value?.map {
             if (it.coreNumber == coreNumber) it.copy(isChecked = isChecked) else it
@@ -199,7 +188,7 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
     }
 
 
-    // honor : [ro.product.brand]: [HONOR]   [ro.product.vendor.manufacturer]: [QUALCOMM] [ro.soc.mode] : [SM8550]
+    // honor : [ro.product.brand]: [HONOR]   [ro.product.vendor.manufacturer]: [QUALCOMM] [ro.soc.model] : [SM8550]
     // vivo/oppo : [ro.product.brand]: [vivo]  [ro.soc.manufacturer]: [Mediatek] [ro.hardware]: [MTK8985]
     // HUAWEI :  [ro.product.brand]: [HUAWEI]  [ro.soc.manufacturer]: [hisilicon] [ro.hardware]: [kirin9000]
 
@@ -207,23 +196,21 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
      * 获取CPU的制造商
      */
     private fun getSocManufacturer(): String {
-        var manufacturer = " "
 
-        when (getSystemProperty("ro.product.brand")) {
-            "HONOR" -> manufacturer = getSystemProperty("ro.product.vendor.manufacturer")
-            "vivo", "oppo", "HUAWEI" -> manufacturer = getSystemProperty("ro.soc.manufacturer")
+        return if (getSystemProperty("ro.product.brand") == "HONOR") {
+            getSystemProperty("ro.product.vendor.manufacturer")
+        } else {
+            getSystemProperty("ro.soc.manufacturer")
         }
-
-        return manufacturer
     }
 
     private fun getSocModel(): String {
-        val socName = ""
-         when(getSystemProperty("ro.product.brand")) {
-            "HONOR" -> return getSystemProperty("ro.soc.mode")
-             "vivo", "oppo", "HUAWEI" -> return getSystemProperty("ro.hardware")
-         }
-        return socName
+
+        return if (getSystemProperty("ro.product.brand") == "HONOR") {
+            getSystemProperty("ro.soc.model")
+        } else {
+            getSystemProperty("ro.hardware")
+        }
     }
 
     /**
@@ -243,17 +230,16 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
     }
 
 
-    private fun getSystemProperty(propertyName: String): String {
+    fun getSystemProperty(key: String): String {
+        Log.i("getSystemProperty","getSystemProperty is used")
         return try {
-            val process = Runtime.getRuntime().exec("getprop | grep $propertyName")
-            process.inputStream.bufferedReader().use { it.readLine() }
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to get system property: $propertyName")
-            ""
+            val process = Runtime.getRuntime().exec("getprop $key")
+            val reader = BufferedReader(InputStreamReader(process.inputStream))
+            reader.readLine()
+        } catch (e: IOException) {
+            e.printStackTrace()
+            "Error retrieving property"
         }
     }
-
-
-
 
 }
