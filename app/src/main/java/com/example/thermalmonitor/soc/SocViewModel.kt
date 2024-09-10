@@ -216,17 +216,19 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
     /**
      *  获取CPU核心数
      * */
-    private fun getCpuCoreCount(): Int {
-        return try {
-            val process = Runtime.getRuntime().exec("getprop ro.product.cpu.abilist")
-            process.inputStream.bufferedReader().use { reader ->
-                val cpuInfo = reader.readLine()
-                cpuInfo.split(",").size
+    fun getCpuCoreCount(): Int {
+        val cpuInfoFile = File("/proc/cpuinfo")
+        var count = 0
+        try {
+            cpuInfoFile.forEachLine { line ->
+                if (line.trim().startsWith("processor")) {
+                    count++
+                }
             }
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to get CPU core count")
-            0
+        } catch (e: IOException) {
+            e.printStackTrace()
         }
+        return count
     }
 
 
