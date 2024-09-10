@@ -77,6 +77,7 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
                 info.hardwareName = getSocModel()
                 Log.i("hardwareName", info.hardwareName)
                 info.socManyFacture = getSocManufacturer()
+                Log.i("socManufacturer",info.socManyFacture)
                 info.coreCount = getCpuCoreCount()
 
 
@@ -191,6 +192,8 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
     // honor : [ro.product.brand]: [HONOR]   [ro.product.vendor.manufacturer]: [QUALCOMM] [ro.soc.model] : [SM8550]
     // vivo/oppo : [ro.product.brand]: [vivo]  [ro.soc.manufacturer]: [Mediatek] [ro.hardware]: [MTK8985]
     // HUAWEI :  [ro.product.brand]: [HUAWEI]  [ro.soc.manufacturer]: [hisilicon] [ro.hardware]: [kirin9000]
+    // Aries :  [ro.product.brand]: [OnePlus]  [ro.soc.manufacturer]: [Mediatek] [ro.soc.model] [MT6983]
+    // CaiHong : [ro.product.brand]: [OnePlus] [ro.soc.manufacturer]: [QTI]  [ro.soc.model]: [SM8650]
 
     /**
      * 获取CPU的制造商
@@ -206,10 +209,11 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun getSocModel(): String {
 
-        return if (getSystemProperty("ro.product.brand") == "HONOR") {
-            getSystemProperty("ro.soc.model")
-        } else {
-            getSystemProperty("ro.hardware")
+        return when(getSystemProperty("ro.product.brand"))
+        {
+            "HONOR","OnePlus","OPPO" -> getSystemProperty("ro.soc.model")
+            "HUAWEI","vivo" -> getSystemProperty("ro.hardware")
+            else -> {"Unknown"}
         }
     }
 
