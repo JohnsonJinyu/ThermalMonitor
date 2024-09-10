@@ -16,6 +16,7 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.IOException
 import java.io.InputStreamReader
+import java.util.regex.Pattern
 
 
 /**
@@ -33,6 +34,13 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _dynamicInfo = MutableLiveData<List<DynamicInfo>>() // 动态信息的内部可变数据，只能在view model中修改
     val dynamicInfo: LiveData<List<DynamicInfo>> = _dynamicInfo // 动态信息的外部不可变数据，可以在fragment中观察
+
+
+    private val directoryPath = "/sys/devices/system/cpu/cpufreq"
+    private val policyPattern = Pattern.compile("policy\\d+") // 匹配 policy0, policy1, ...
+
+
+    private val policyToCoresMap = mutableMapOf<String, Set<Int>>()
 
 
     /**
@@ -83,6 +91,13 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
 
                 // 根据核心数，遍历每个核心，读取对应的最大最小频率文件，并生成一个频率范围的字符串，格式参考题目要求
                 // 使用一个map来存储每个频率范围对应的核心数
+
+                getCPUPolicyList()
+
+                // 打印结果
+                policyToCoresMap.forEach { (policy, cores) ->
+                    Log.i("policy","$policy -> ${cores.joinToString(", ")}")
+                }
 
 
                 val rangeMap = mutableMapOf<String, Int>()
@@ -141,26 +156,26 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
                     val oldList = _dynamicInfo.value ?: emptyList<DynamicInfo>() // 获取当前的动态信息列表
                     val newList = mutableListOf<DynamicInfo>() // 创建一个新的动态信息列表，用于存储读取到的数据
 
-                    for (i in 0 until (staticInfo.value?.coreCount
-                        ?: 0).toInt()) { // 遍历每个核心，根据核心数来确定循环次数
-                        val file = File(
-                            dynamicInfoFile,
-                            "cpu$i/cpufreq/scaling_cur_freq"
-                        ) // 根据核心编号，拼接出对应的文件路径
-                        val frequency =
-                            file.readText().trim().toInt() / 1000 // 读取文件内容，并转换为整数，并除以1000得到MHz单位
-                        val isChecked = oldList.find { it.coreNumber == i + 1 }?.isChecked
-                            ?: false // 查找当前核心的isChecked状态，如果找不到，就默认为false
-                        val info = DynamicInfo(
-                            i + 1,
-                            frequency,
-                            isChecked
-                        ) // 创建一个新的动态信息对象，用于存储核心编号、频率和isChecked状态
-                        newList.add(info) // 将新的动态信息对象添加到新的列表中
+                    // 读取所有policy目录下的scaling_cur_freq文件
+                    // getCPUPolicyList() // 确保policyToCoresMap已经更新
+
+                    for ((policy, cores) in policyToCoresMap) {
+                        val file = File("/sys/devices/system/cpu/cpufreq/$policy/scaling_cur_freq")
+                        val frequency = file.readText().trim().toInt() / 1000 // 读取文件内容，并转换为整数，并除以1000得到MHz单位
+
+                        for (core in cores) {
+                            val isChecked = oldList.find { it.coreNumber == core }?.isChecked
+                                ?: false // 查找当前核心的isChecked状态，如果找不到，就默认为false
+                            val info = DynamicInfo(
+                                core,
+                                frequency,
+                                isChecked
+                            ) // 创建一个新的动态信息对象，用于存储核心编号、频率和isChecked状态
+                            newList.add(info) // 将新的动态信息对象添加到新的列表中
+                        }
                     }
 
                     _dynamicInfo.postValue(newList) // 在子线程中更新动态信息的数据，使用postValue方法
-                    //  Log.d("newList", "$newList")
                 } else {
                     // 记录日志，提示文件访问权限受限
                     Timber.tag("SocViewModel").e("Permission denied: Cannot read dynamic info file")
@@ -190,7 +205,7 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
 
 
     // honor : [ro.product.brand]: [HONOR]   [ro.product.vendor.manufacturer]: [QUALCOMM] [ro.soc.model] : [SM8550]
-    // vivo/oppo : [ro.product.brand]: [vivo]  [ro.soc.manufacturer]: [Mediatek] [ro.hardware]: [MTK8985]
+    // vivo : [ro.product.brand]: [vivo]  [ro.soc.manufacturer]: [Mediatek] [ro.hardware]: [MTK8985]
     // HUAWEI :  [ro.product.brand]: [HUAWEI]  [ro.soc.manufacturer]: [hisilicon] [ro.hardware]: [kirin9000]
     // Aries :  [ro.product.brand]: [OnePlus]  [ro.soc.manufacturer]: [Mediatek] [ro.soc.model] [MT6983]
     // CaiHong : [ro.product.brand]: [OnePlus] [ro.soc.manufacturer]: [QTI]  [ro.soc.model]: [SM8650]
@@ -248,4 +263,34 @@ class SocViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+
+    fun getCPUPolicyList() {
+        val files = File(directoryPath).listFiles() ?: return
+
+        for (file in files) {
+            val matcher = policyPattern.matcher(file.name)
+            if (matcher.find()) {
+                val policyName = matcher.group()
+                val cores = mutableSetOf<Int>()
+                try {
+                    val coresFile = File(file, "related_cpus")
+                    coresFile.reader().use { reader ->
+                        reader.forEachLine { line ->
+                            line.split(' ').forEach { core ->
+                                core.toIntOrNull()?.let { cores.add(it) }
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    println("Error reading cores for $policyName: ${e.message}")
+                }
+                policyToCoresMap[policyName] = cores
+            }
+        }
+
+        // 打印结果
+        policyToCoresMap.forEach { (policy, cores) ->
+            println("$policy -> ${cores.joinToString(" ")}")
+        }
+    }
 }
